@@ -32,13 +32,13 @@ export function countCards({ language } = {}) {
 
 // ─── Write ───────────────────────────────────────────────────────────────────
 
-export function createCard({ language, type = "vocabulary", front, back, context = null, tags = [] }) {
+export function createCard({ language, type = "vocabulary", front, back, context = null, tags = [], status = "ready" }) {
   const defaults = newCardDefaults();
   const result = getDb()
     .prepare(
       `INSERT INTO study_cards
-        (language, type, front, back, context, tags, ease, interval, reps, due_date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (language, type, front, back, context, tags, ease, interval, reps, due_date, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       language,
@@ -50,7 +50,8 @@ export function createCard({ language, type = "vocabulary", front, back, context
       defaults.ease,
       defaults.interval,
       defaults.reps,
-      defaults.due_date
+      defaults.due_date,
+      status
     );
   return getCard(result.lastInsertRowid);
 }

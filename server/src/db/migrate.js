@@ -1,4 +1,21 @@
 export function runMigrations(db) {
+  // Phase 2 migrations (guarded — safe to run on existing DB)
+  const cols = db.prepare("PRAGMA table_info(study_cards)").all().map((c) => c.name);
+  if (!cols.includes("status")) {
+    db.exec("ALTER TABLE study_cards ADD COLUMN status TEXT NOT NULL DEFAULT 'ready'");
+  }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS study_ai_cache (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      task         TEXT NOT NULL,
+      input_hash   TEXT NOT NULL,
+      response_json TEXT NOT NULL,
+      created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_cache_task_hash ON study_ai_cache(task, input_hash);
+  `);
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
       key   TEXT PRIMARY KEY,

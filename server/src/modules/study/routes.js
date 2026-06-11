@@ -5,6 +5,8 @@ import { buildQueue, getQueueCounts } from "./queue.js";
 import { getStreak, getSlipStatus, getWeekActivity } from "./streak.js";
 import { getDb } from "../../db/connection.js";
 import { getAllSettings, setSetting } from "../../services/settings.js";
+import { runTask } from "../../shared/ai.js";
+import { getCached, putCache } from "./ai.repo.js";
 
 const router = Router();
 
@@ -49,6 +51,67 @@ router.post("/cards", (req, res) => {
   const card = createCard({ language, type, front, back, context, tags });
   res.status(201).json(serializeCard(card));
 });
+
+// ─── AI Quick-Add ─────────────────────────────────────────────────────────────
+
+router.post("/cards/quick-add", (req, res) => {
+  const { word } = req.body;
+  if (!word || !word.trim()) {
+    return res.status(400).json({ error: "word required" });
+  }
+  const card = createCard({
+    language: "en",
+    type: "vocabulary",
+    front: word.trim(),
+    back: "…",
+    context: null,
+    tags: [],
+    status: "pending",
+  });
+  // Fill in background — intentionally not awaited
+  fillCard(card.id, word.trim()).catch(() => {});
+  res.status(201).json(serializeCard(card));
+});
+
+router.post("/cards/:id/retry", async (req, res) => {
+  const id = Number(req.params.id);
+  const card = getCard(id);
+  if (!card) return res.status(404).json({ error: "Not found" });
+  if (card.status !== "failed") {
+    return res.status(400).json({ error: "Card is not in failed state" });
+  }
+  getDb().prepare("UPDATE study_cards SET status='pending' WHERE id=?").run(id);
+  fillCard(id, card.front).catch(() => {});
+  res.json(serializeCard(getCard(id)));
+});
+
+async function fillCard(id, word) {
+  const db = getDb();
+  const input = { word };
+  try {
+    let result = getCached("autofill", input);
+    if (!result) {
+      result = await runTask("autofill", input);
+      putCache("autofill", input, result);
+    }
+    db.prepare(
+      `UPDATE study_cards
+       SET back=?, context=?, tags=?, status='ready'
+       WHERE id=?`
+    ).run(
+      [result.definition, result.ipa ? `/${result.ipa.replace(/^\/|\/$/g, "")}/` : null, result.translation_zh_tw]
+        .filter(Boolean).join(" · "),
+      result.example_general
+        ? `${result.example_general}\n${result.example_civil_eng || ""}`.trim()
+        : null,
+      JSON.stringify(result.tags || []),
+      id
+    );
+  } catch (err) {
+    console.error(`[ai] fillCard(${id}) failed:`, err.message);
+    db.prepare("UPDATE study_cards SET status='failed' WHERE id=?").run(id);
+  }
+}
 
 router.patch("/cards/:id", (req, res) => {
   const id = Number(req.params.id);

@@ -124,6 +124,9 @@ export default function Dashboard({ onStart, onAddCard, theme, onToggleTheme }) 
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [dismissed, setDismissed] = useState([]);
+  const [quickWord, setQuickWord] = useState("");
+  const [quickAdding, setQuickAdding] = useState(false);
+  const [quickDone, setQuickDone] = useState("");
 
   useEffect(() => {
     api.getDashboard()
@@ -216,18 +219,65 @@ export default function Dashboard({ onStart, onAddCard, theme, onToggleTheme }) 
         <ArrowRight size={19} sw={2} />
       </button>
 
-      {/* add card shortcut */}
-      <button className="tap" onClick={onAddCard}
-        style={{
-          marginTop: 10, width: "100%", padding: "13px", borderRadius: "var(--r-md)",
-          background: "var(--surface)", border: "1px solid var(--border)",
-          fontSize: 15, fontWeight: 600, color: "var(--text-soft)",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-          boxShadow: "var(--shadow)",
-        }}>
-        <Plus size={17} />
-        Add card
-      </button>
+      {/* AI quick-add */}
+      <div style={{ marginTop: 10 }}>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          const word = quickWord.trim();
+          if (!word || quickAdding) return;
+          setQuickAdding(true);
+          setQuickDone("");
+          try {
+            await api.quickAddCard(word);
+            setQuickWord("");
+            setQuickDone(`"${word}" added — AI filling in background`);
+            setTimeout(() => setQuickDone(""), 3000);
+          } catch (err) {
+            setQuickDone(`Error: ${err.message}`);
+          } finally {
+            setQuickAdding(false);
+          }
+        }} style={{ display: "flex", gap: 8 }}>
+          <input
+            value={quickWord}
+            onChange={(e) => setQuickWord(e.target.value)}
+            placeholder="Quick-add English word…"
+            disabled={quickAdding}
+            style={{
+              flex: 1, padding: "13px 14px", borderRadius: "var(--r-md)",
+              background: "var(--surface)", border: "1px solid var(--border)",
+              boxShadow: "var(--shadow)", fontSize: 15, color: "var(--text)",
+              fontFamily: "var(--font)", outline: "none",
+              opacity: quickAdding ? 0.6 : 1,
+            }}
+          />
+          <button type="submit" disabled={quickAdding || !quickWord.trim()} className="tap"
+            style={{
+              padding: "13px 18px", borderRadius: "var(--r-md)",
+              background: "var(--en)", color: "#fff",
+              fontSize: 15, fontWeight: 700,
+              opacity: (quickAdding || !quickWord.trim()) ? 0.5 : 1,
+              flexShrink: 0,
+            }}>
+            {quickAdding ? "…" : "Add"}
+          </button>
+        </form>
+        {quickDone && (
+          <div style={{ marginTop: 7, fontSize: 13, color: "var(--muted)", paddingLeft: 2 }}>
+            {quickDone}
+          </div>
+        )}
+        <button className="tap" onClick={onAddCard}
+          style={{
+            marginTop: 8, width: "100%", padding: "11px", borderRadius: "var(--r-md)",
+            background: "transparent", border: "none",
+            fontSize: 13.5, fontWeight: 500, color: "var(--faint)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>
+          <Plus size={14} />
+          Manual card form
+        </button>
+      </div>
 
       {/* below the fold */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 26 }}>

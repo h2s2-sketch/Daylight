@@ -25,4 +25,6 @@ export const api = {
   getSettings:  ()                => req("GET",    "/settings"),
   patchSettings:(body)            => req("PATCH",  "/settings", body),
   getStats:     ()                => req("GET",    "/stats"),
+  quickAddCard: (word)           => req("POST",   "/cards/quick-add", { word }),
+  retryCard:    (id)             => req("POST",   `/cards/${id}/retry`),
 };

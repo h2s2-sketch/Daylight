@@ -2,17 +2,31 @@ import { useState, useEffect } from "react";
 import { api } from "../../shared/api.js";
 import { ChevronLeft, Trash, Edit2, Plus } from "../../shared/icons.jsx";
 
-function CardRow({ card, onEdit, onDelete }) {
+function Spinner() {
+  return (
+    <span style={{
+      display: "inline-block", width: 14, height: 14,
+      border: "2px solid var(--border)", borderTopColor: "var(--en)",
+      borderRadius: "50%", animation: "spin 0.7s linear infinite",
+      verticalAlign: "middle", flexShrink: 0,
+    }} />
+  );
+}
+
+function CardRow({ card, onEdit, onDelete, onRetry }) {
   const isEn = card.language === "en";
   const accent = isEn ? "var(--en)" : "var(--kr)";
   const soft   = isEn ? "var(--en-soft)" : "var(--kr-soft)";
   const tags   = Array.isArray(card.tags) ? card.tags : [];
+  const isPending = card.status === "pending";
+  const isFailed  = card.status === "failed";
 
   return (
     <div style={{
       display: "flex", alignItems: "flex-start", gap: 14,
-      background: "var(--surface)", border: "1px solid var(--border)",
+      background: "var(--surface)", border: `1px solid ${isFailed ? "color-mix(in oklch, var(--again) 30%, var(--border))" : "var(--border)"}`,
       borderRadius: "var(--r-md)", boxShadow: "var(--shadow)", padding: "14px 16px",
+      opacity: isPending ? 0.8 : 1,
     }}>
       <span style={{
         width: 38, height: 38, borderRadius: 10, flexShrink: 0,
@@ -21,27 +35,37 @@ function CardRow({ card, onEdit, onDelete }) {
       }}>{isEn ? "En" : "한"}</span>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.01em" }}
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.01em", display: "flex", alignItems: "center", gap: 7 }}
           className={!isEn ? "kr" : ""}>
           {card.front}
+          {isPending && <Spinner />}
+          {isFailed && <span style={{ fontSize: 11.5, color: "var(--again)", fontWeight: 600, background: "var(--again-soft)", borderRadius: 99, padding: "2px 7px" }}>AI failed</span>}
         </div>
-        <div style={{ marginTop: 3, fontSize: 13.5, color: "var(--text-soft)", lineHeight: 1.4 }}>
-          {card.back}
+        <div style={{ marginTop: 3, fontSize: 13.5, color: isPending ? "var(--faint)" : "var(--text-soft)", lineHeight: 1.4, fontStyle: isPending ? "italic" : "normal" }}>
+          {isPending ? "AI filling in…" : card.back}
         </div>
-        <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
-          <span className="tnum" style={{ fontSize: 11.5, color: "var(--faint)", fontWeight: 500 }}>
-            {card.interval}d interval · ease {card.ease.toFixed(2)}
-          </span>
-          {tags.map((t) => (
-            <span key={t} style={{
-              fontSize: 11, fontWeight: 600, color: "var(--muted)",
-              background: "var(--bg-sunken)", borderRadius: 99, padding: "2px 7px",
-            }}>{t}</span>
-          ))}
-        </div>
+        {!isPending && (
+          <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
+            <span className="tnum" style={{ fontSize: 11.5, color: "var(--faint)", fontWeight: 500 }}>
+              {card.interval}d interval · ease {card.ease.toFixed(2)}
+            </span>
+            {tags.map((t) => (
+              <span key={t} style={{
+                fontSize: 11, fontWeight: 600, color: "var(--muted)",
+                background: "var(--bg-sunken)", borderRadius: 99, padding: "2px 7px",
+              }}>{t}</span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+        {isFailed && (
+          <button className="tap" onClick={() => onRetry(card)} aria-label="Retry AI"
+            style={{ padding: "0 10px", height: 32, borderRadius: 8, fontSize: 12, fontWeight: 600, color: "var(--en)", background: "var(--en-soft)", whiteSpace: "nowrap" }}>
+            Retry
+          </button>
+        )}
         <button className="tap" onClick={() => onEdit(card)} aria-label="Edit"
           style={{ width: 32, height: 32, borderRadius: 8, display: "grid", placeItems: "center", color: "var(--muted)", background: "var(--bg-sunken)" }}>
           <Edit2 size={15} />
@@ -111,12 +135,22 @@ export default function Cards({ onBack, onAddCard }) {
   const [editing, setEditing]   = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  function loadCards(lang) {
+    return api.getCards(lang ? { language: lang } : {}).then(setCards);
+  }
+
   useEffect(() => {
     setLoading(true);
-    api.getCards(language ? { language } : {})
-      .then(setCards)
-      .finally(() => setLoading(false));
+    loadCards(language).finally(() => setLoading(false));
   }, [language]);
+
+  // Poll while any card is pending
+  useEffect(() => {
+    const hasPending = cards.some((c) => c.status === "pending");
+    if (!hasPending) return;
+    const t = setTimeout(() => loadCards(language), 2000);
+    return () => clearTimeout(t);
+  }, [cards, language]);
 
   async function handleDelete(card) {
     await api.deleteCard(card.id);
@@ -127,6 +161,11 @@ export default function Cards({ onBack, onAddCard }) {
   function handleSaved(updated) {
     setCards((c) => c.map((x) => x.id === updated.id ? updated : x));
     setEditing(null);
+  }
+
+  async function handleRetry(card) {
+    const updated = await api.retryCard(card.id);
+    setCards((c) => c.map((x) => x.id === updated.id ? updated : x));
   }
 
   return (
@@ -184,7 +223,8 @@ export default function Cards({ onBack, onAddCard }) {
           {cards.map((card) => (
             <CardRow key={card.id} card={card}
               onEdit={setEditing}
-              onDelete={setConfirmDelete} />
+              onDelete={setConfirmDelete}
+              onRetry={handleRetry} />
           ))}
         </div>
       )}

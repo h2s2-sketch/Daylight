@@ -48,6 +48,7 @@ export function buildQueue(language = null) {
       .prepare(
         `SELECT * FROM study_cards
          WHERE language = ? AND due_date <= ? AND reps > 0
+           AND (status IS NULL OR status = 'ready')
          ORDER BY due_date ASC, id ASC`
       )
       .all(lang, today);
@@ -58,6 +59,7 @@ export function buildQueue(language = null) {
         `SELECT * FROM study_cards
          WHERE language = ? AND interval = 0 AND reps = 0 AND due_date <= ?
            AND id IN (SELECT DISTINCT card_id FROM study_reviews)
+           AND (status IS NULL OR status = 'ready')
          ORDER BY id ASC`
       )
       .all(lang, today);
@@ -67,6 +69,7 @@ export function buildQueue(language = null) {
       .prepare(
         `SELECT * FROM study_cards
          WHERE language = ? AND id NOT IN (SELECT DISTINCT card_id FROM study_reviews)
+           AND (status IS NULL OR status = 'ready')
          ORDER BY id ASC
          LIMIT ?`
       )
@@ -94,7 +97,8 @@ export function getQueueCounts() {
     const due = db
       .prepare(
         `SELECT COUNT(*) AS n FROM study_cards
-         WHERE language = ? AND due_date <= ? AND reps > 0`
+         WHERE language = ? AND due_date <= ? AND reps > 0
+           AND (status IS NULL OR status = 'ready')`
       )
       .get(lang, today).n;
 
@@ -102,7 +106,8 @@ export function getQueueCounts() {
       .prepare(
         `SELECT COUNT(*) AS n FROM study_cards
          WHERE language = ? AND interval = 0 AND reps = 0 AND due_date <= ?
-           AND id IN (SELECT DISTINCT card_id FROM study_reviews)`
+           AND id IN (SELECT DISTINCT card_id FROM study_reviews)
+           AND (status IS NULL OR status = 'ready')`
       )
       .get(lang, today).n;
 
@@ -111,6 +116,7 @@ export function getQueueCounts() {
         `SELECT COUNT(*) AS n FROM study_cards
          WHERE language = ?
            AND id NOT IN (SELECT DISTINCT card_id FROM study_reviews)
+           AND (status IS NULL OR status = 'ready')
          LIMIT ?`
       )
       .get(lang, remainingNew).n;
