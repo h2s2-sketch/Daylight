@@ -1,0 +1,111 @@
+/* ============================================================
+   Lumi — design tokens + base styles
+   ============================================================ */
+
+:root {
+  /* warm-neutral light palette */
+  --bg:           #FAFAF8;
+  --bg-sunken:    #F3F2EE;
+  --surface:      #FFFFFF;
+  --surface-2:    #FBFBF9;
+  --text:         #2A2A28;
+  --text-soft:    #56564F;
+  --muted:        #908F87;
+  --faint:        #B6B5AC;
+  --border:       rgba(42, 42, 40, 0.08);
+  --border-strong:rgba(42, 42, 40, 0.13);
+  --shadow:       0 1px 2px rgba(42,42,40,0.04), 0 6px 20px rgba(42,42,40,0.05);
+  --shadow-lift:  0 2px 4px rgba(42,42,40,0.05), 0 14px 38px rgba(42,42,40,0.09);
+
+  /* accents */
+  --en:        oklch(0.60 0.12 252);
+  --en-soft:   oklch(0.60 0.12 252 / 0.10);
+  --en-soft-2: oklch(0.60 0.12 252 / 0.16);
+  --kr:        oklch(0.64 0.12 28);
+  --kr-soft:   oklch(0.64 0.12 28 / 0.11);
+  --kr-soft-2: oklch(0.64 0.12 28 / 0.17);
+
+  /* grading */
+  --again:      oklch(0.60 0.12 25);
+  --again-soft: oklch(0.60 0.12 25 / 0.12);
+  --easy:       oklch(0.58 0.09 155);
+  --easy-soft:  oklch(0.58 0.09 155 / 0.13);
+
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 32px;
+
+  --maxw: 640px;
+  --pad:  22px;
+
+  --font:    "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-kr: "Noto Sans KR", "Figtree", sans-serif;
+  --font-cn: "Noto Sans TC", "Figtree", sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg:           #1A1A18;
+  --bg-sunken:    #141413;
+  --surface:      #232321;
+  --surface-2:    #1F1F1D;
+  --text:         #ECEBE5;
+  --text-soft:    #C3C2BA;
+  --muted:        #8C8B83;
+  --faint:        #6A6A63;
+  --border:       rgba(255, 255, 250, 0.09);
+  --border-strong:rgba(255, 255, 250, 0.15);
+  --shadow:       0 1px 2px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-lift:  0 2px 6px rgba(0,0,0,0.3), 0 18px 44px rgba(0,0,0,0.42);
+
+  --en:        oklch(0.72 0.12 252);
+  --en-soft:   oklch(0.72 0.12 252 / 0.13);
+  --en-soft-2: oklch(0.72 0.12 252 / 0.20);
+  --kr:        oklch(0.74 0.12 28);
+  --kr-soft:   oklch(0.74 0.12 28 / 0.14);
+  --kr-soft-2: oklch(0.74 0.12 28 / 0.22);
+
+  --again:      oklch(0.70 0.13 25);
+  --again-soft: oklch(0.70 0.13 25 / 0.15);
+  --easy:       oklch(0.70 0.10 155);
+  --easy-soft:  oklch(0.70 0.10 155 / 0.16);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg-sunken);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+#root { height: 100%; }
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+.tap { -webkit-tap-highlight-color: transparent; user-select: none; }
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.kr { font-family: var(--font-kr); }
+.cn { font-family: var(--font-cn); }
+
+.fade-enter { animation: fadeUp 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ripple {
+  from { opacity: 0.5; transform: scale(1); }
+  to   { opacity: 0;   transform: scale(1.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
