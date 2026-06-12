@@ -3,6 +3,7 @@ const BASE = "/api/study";
 async function req(method, path, body) {
   const res = await fetch(BASE + path, {
     method,
+    credentials: "include",
     headers: body ? { "Content-Type": "application/json" } : {},
     body: body ? JSON.stringify(body) : undefined,
   });
