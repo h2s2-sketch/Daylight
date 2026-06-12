@@ -1,8 +1,8 @@
-const CACHE = "lumi-shell-v1";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/icons/lumi.svg", "/icons/lumi-192.png", "/icons/lumi-512.png"];
+const CACHE = "lumi-assets-v2";
+const APP_ASSETS = ["/manifest.webmanifest", "/icons/lumi.svg", "/icons/lumi-192.png", "/icons/lumi-512.png"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_ASSETS)));
   self.skipWaiting();
 });
 
@@ -22,7 +22,8 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request).catch(() => caches.match("/")));
+    // Navigation must reach the server so HTTP authentication is enforced.
+    event.respondWith(fetch(request));
     return;
   }
 
