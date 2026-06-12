@@ -3,6 +3,12 @@ import { createRoot } from "react-dom/client";
 import "./styles/tokens.css";
 import App from "./App.jsx";
 
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 // App shell: phone-width column, centered on desktop
 const appShellStyle = document.createElement("style");
 appShellStyle.textContent = `
@@ -28,6 +34,10 @@ appShellStyle.textContent = `
     border: 1px solid var(--border);
     box-shadow: var(--shadow-lift);
   }
+}
+@media (display-mode: standalone) {
+  body { padding: 0; background: var(--bg); }
+  .app { min-height: 100dvh; height: 100dvh; border: 0; border-radius: 0; }
 }
 `;
 document.head.appendChild(appShellStyle);
