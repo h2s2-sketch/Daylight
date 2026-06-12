@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { mkdirSync } from "fs";
 import studyRouter from "./modules/study/routes.js";
+import hangulRouter from "./modules/hangul/routes.js";
 import { getDb } from "./db/connection.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // All study API endpoints live under /api/study
 app.use("/api/study", studyRouter);
+app.use("/api/study/hangul", hangulRouter);
 
 // Health check
 app.get("/api/health", (_, res) => res.json({ ok: true }));

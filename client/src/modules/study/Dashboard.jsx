@@ -51,6 +51,44 @@ function QueueCard({ lang, data, onStart }) {
   );
 }
 
+function HangulProgressCard({ progress, onStart }) {
+  if (!progress) return null;
+  const foundation = progress.foundation;
+  const core = progress.core;
+  return (
+    <div style={{
+      marginTop: 12, padding: "16px 17px", borderRadius: "var(--r-md)",
+      background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--kr)" }}>
+            Hangul foundation
+          </div>
+          <div style={{ marginTop: 4, fontSize: 14, color: "var(--text-soft)" }}>
+            {foundation.complete
+              ? `Complete - ${core.unlocked} of ${core.total} core cards unlocked`
+              : `${foundation.introduced}/${foundation.total} seen - ${foundation.mastered}/${foundation.masteryTarget} building recall`}
+          </div>
+        </div>
+        <span className="tnum" style={{ fontSize: 20, fontWeight: 700, color: "var(--kr)" }}>{foundation.percent}%</span>
+      </div>
+      <div style={{ marginTop: 12, height: 7, borderRadius: 99, overflow: "hidden", background: "var(--bg-sunken)" }}>
+        <div style={{ width: `${foundation.percent}%`, height: "100%", borderRadius: 99, background: "var(--kr)", transition: "width .35s ease" }} />
+      </div>
+      <button className="tap" onClick={onStart} style={{
+        marginTop: 12, width: "100%", padding: "12px", borderRadius: "var(--r-sm)",
+        background: "var(--kr-soft)", color: "var(--kr)", fontSize: 14, fontWeight: 700,
+      }}>{foundation.complete ? "Practice Hangul" : "Continue foundation"}</button>
+      {!foundation.complete && (
+        <div style={{ marginTop: 9, fontSize: 12.5, color: "var(--faint)", lineHeight: 1.4 }}>
+          The 300-card Korean core deck unlocks after you have seen every foundation card and built recall on 80%.
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WeekStrip({ week }) {
   const totals = week.map((w) => w.en + w.kr);
   const max = Math.max(...totals, 1);
@@ -120,11 +158,12 @@ function SlipBanner({ language, daysSince, onStart }) {
   );
 }
 
-export default function Dashboard({ onStart, onAddCard, theme, onToggleTheme }) {
+export default function Dashboard({ onStart, onHangul, onAddCard, theme, onToggleTheme }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [dismissed, setDismissed] = useState([]);
   const [quickWord, setQuickWord] = useState("");
+  const [quickLanguage, setQuickLanguage] = useState("en");
   const [quickAdding, setQuickAdding] = useState(false);
   const [quickDone, setQuickDone] = useState("");
 
@@ -146,7 +185,7 @@ export default function Dashboard({ onStart, onAddCard, theme, onToggleTheme }) 
     </div>
   );
 
-  const { queue, streak, slip, week } = data;
+  const { queue, streak, slip, week, hangul } = data;
   const totalDue = (queue.en?.due ?? 0) + (queue.kr?.due ?? 0) + (queue.en?.fresh ?? 0) + (queue.kr?.fresh ?? 0);
   const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
@@ -188,105 +227,70 @@ export default function Dashboard({ onStart, onAddCard, theme, onToggleTheme }) 
       </div>
 
       {/* summary line */}
-      <p className="tnum" style={{ marginTop: 18, fontSize: 15, color: "var(--text-soft)", lineHeight: 1.45 }}>
-        {totalDue > 0
-          ? <>You have <b style={{ color: "var(--text)", fontWeight: 700 }}>{totalDue} cards</b> waiting across two languages.</>
-          : <>All caught up for today. ðŸŽ‰</>}
-      </p>
+      <p className="tnum" style={{ marginTop: 18, fontSize:#^¶ÛÛh‘éì¶»§q«^u')
+         ORDER BY id ASC
+         LIMIT ?`
+      )
+      .all(lang, remainingNew);
 
-      {/* queue cards */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
-        <QueueCard lang="en" data={queue.en} onStart={onStart} />
-        <QueueCard lang="kr" data={queue.kr} onStart={onStart} />
-      </div>
+    queue.push(...due, ...relearning, ...fresh);
+  }
 
-      {/* primary CTA */}
-      <button className="tap" onClick={() => onStart(null)} disabled={totalDue === 0}
-        style={{
-          marginTop: 18, width: "100%", padding: "17px", borderRadius: "var(--r-md)",
-          background: totalDue === 0 ? "var(--bg-sunken)" : "var(--text)",
-          color: totalDue === 0 ? "var(--faint)" : "var(--bg)",
-          fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
-          boxShadow: totalDue === 0 ? "none" : "var(--shadow-lift)",
-          transition: "transform .16s ease, opacity .16s ease",
-          cursor: totalDue === 0 ? "default" : "pointer",
-        }}
-        onPointerDown={(e) => totalDue > 0 && (e.currentTarget.style.transform = "scale(0.985)")}
-        onPointerUp={(e)   => e.currentTarget.style.transform = "scale(1)"}
-        onPointerLeave={(e)=> e.currentTarget.style.transform = "scale(1)"}>
-        Start Review
-        <ArrowRight size={19} sw={2} />
-      </button>
+  return queue;
+}
 
-      {/* AI quick-add */}
-      <div style={{ marginTop: 10 }}>
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          const word = quickWord.trim();
-          if (!word || quickAdding) return;
-          setQuickAdding(true);
-          setQuickDone("");
-          try {
-            await api.quickAddCard(word);
-            setQuickWord("");
-            setQuickDone(`"${word}" added â€” AI filling in background`);
-            setTimeout(() => setQuickDone(""), 3000);
-          } catch (err) {
-            setQuickDone(`Error: ${err.message}`);
-          } finally {
-            setQuickAdding(false);
-          }
-        }} style={{ display: "flex", gap: 8 }}>
-          <input
-            value={quickWord}
-            onChange={(e) => setQuickWord(e.target.value)}
-            placeholder="Quick-add English wordâ€¦"
-            disabled={quickAdding}
-            style={{
-              flex: 1, padding: "13px 14px", borderRadius: "var(--r-md)",
-              background: "var(--surface)", border: "1px solid var(--border)",
-              boxShadow: "var(--shadow)", fontSize: 15, color: "var(--text)",
-              fontFamily: "var(--font)", outline: "none",
-              opacity: quickAdding ? 0.6 : 1,
-            }}
-          />
-          <button type="submit" disabled={quickAdding || !quickWord.trim()} className="tap"
-            style={{
-              padding: "13px 18px", borderRadius: "var(--r-md)",
-              background: "var(--en)", color: "#fff",
-              fontSize: 15, fontWeight: 700,
-              opacity: (quickAdding || !quickWord.trim()) ? 0.5 : 1,
-              flexShrink: 0,
-            }}>
-            {quickAdding ? "â€¦" : "Add"}
-          </button>
-        </form>
-        {quickDone && (
-          <div style={{ marginTop: 7, fontSize: 13, color: "var(--muted)", paddingLeft: 2 }}>
-            {quickDone}
-          </div>
-        )}
-        <button className="tap" onClick={onAddCard}
-          style={{
-            marginTop: 8, width: "100%", padding: "11px", borderRadius: "var(--r-md)",
-            background: "transparent", border: "none",
-            fontSize: 13.5, fontWeight: 500, color: "var(--faint)",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}>
-          <Plus size={14} />
-          Manual card form
-        </button>
-      </div>
+/**
+ * Queue counts for dashboard (per language).
+ */
+export function getQueueCounts() {
+  syncCoreUnlocks();
+  const db = getDb();
+  const today = todayIso();
+  const result = {};
 
-      {/* below the fold */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 26 }}>
-        <WeekStrip week={week} />
-        {slipBanners.map(([lang, s]) => (
-          <SlipBanner key={lang} language={lang} daysSince={s.daysSince} onStart={onStart}
-            onDismiss={() => setDismissed((d) => [...d, lang])} />
-        ))}
-      </div>
-    </div>
-  );
+  for (const lang of ["en", "kr"]) {
+    const limitNew = parseInt(getSetting(`study_new_${lang}_daily`, lang === "en" ? "10" : "5"), 10);
+    const alreadyNew = newCardsReviewedToday(db, lang);
+    const remainingNew = Math.max(0, limitNew - alreadyNew);
+
+    const due = db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM study_cards
+         WHERE language = ? AND due_date <= ? AND reps > 0
+           AND (status IS NULL OR status = 'ready')`
+      )
+      .get(lang, today).n;
+
+    const relearning = db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM study_cards
+         WHERE language = ? AND interval = 0 AND reps = 0 AND due_date <= ?
+           AND id IN (SELECT DISTINCT card_id FROM study_reviews)
+           AND (status IS NULL OR status = 'ready')`
+      )
+      .get(lang, today).n;
+
+    const fresh = remainingNew === 0
+      ? 0
+      : db
+        .prepare(
+          `SELECT COUNT(*) AS n FROM study_cards
+           WHERE language = ?
+             AND id NOT IN (SELECT DISTINCT card_id FROM study_reviews)
+             AND (status IS NULL OR status = 'ready')`
+        )
+        .get(lang).n;
+
+    const totalCards = db
+      .prepare("SELECT COUNT(*) AS n FROM study_cards WHERE language = ?")
+      .get(lang).n;
+
+    result[lang] = {
+      due: due + relearning,
+      fresh: Math.min(fresh, remainingNew),
+      total: totalCards,
+    };
+  }
+
+  return result;
 }

@@ -1,21 +1,55 @@
-export function runMigrations(db) {
-  // Phase 2 migrations (guarded — safe to run on existing DB)
-  const cols = db.prepare("PRAGMA table_info(study_cards)").all().map((c) => c.name);
-  if (!cols.includes("status")) {
-    db.exec("ALTER TABLE study_cards ADD COLUMN status TEXT NOT NULL DEFAULT 'ready'");
-  }
+import { HANGUL_FOUNDATION, KOREAN_CORE_DECK } from "../modules/hangul/data.js";
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS study_ai_cache (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT,
-      task         TEXT NOT NULL,
-      input_hash   TEXT NOT NULL,
-      response_json TEXT NOT NULL,
-      created_at   TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_cache_task_hash ON study_ai_cache(task, input_hash);
+function addColumn(db, table, name, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((column) => column.name);
+  if (!columns.includes(name)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${definition}`);
+  }
+}
+
+function seedKoreanCourse(db) {
+  const today = new Date().toISOString().slice(0, 10);
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO study_cards
+      (language, type, front, back, context, tags, ease, interval, reps, due_date,
+       status, source_key, course, course_stage)
+    VALUES ('kr', ?, ?, ?, ?, ?, 2.5, 0, 0, ?, ?, ?, ?, ?)
   `);
 
+  db.transaction(() => {
+    HANGUL_FOUNDATION.forEach(([kind, front, sound, context], index) => {
+      insert.run(
+        "recognition",
+        front,
+        sound,
+        context,
+        JSON.stringify(["hangul", "foundation", kind]),
+        today,
+        "ready",
+        `hangul-foundation-${String(index + 1).padStart(3, "0")}`,
+        "hangul_foundation",
+        kind === "syllable" ? 2 : 1
+      );
+    });
+
+    KOREAN_CORE_DECK.forEach((entry) => {
+      insert.run(
+        entry.type,
+        entry.front,
+        entry.back,
+        `Korean core deck - stage ${entry.stage}`,
+        JSON.stringify(["korean-core", `stage-${entry.stage}`, entry.type]),
+        today,
+        "locked",
+        entry.key,
+        "korean_core",
+        entry.stage
+      );
+    });
+  })();
+}
+
+export function runMigrations(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
       key   TEXT PRIMARY KEY,
@@ -30,13 +64,15 @@ export function runMigrations(db) {
       back        TEXT    NOT NULL,
       context     TEXT,
       tags        TEXT    NOT NULL DEFAULT '[]',
-      -- SM-2 fields
       ease        REAL    NOT NULL DEFAULT 2.5,
       interval    INTEGER NOT NULL DEFAULT 0,
       reps        INTEGER NOT NULL DEFAULT 0,
       due_date    TEXT    NOT NULL,
-      -- source linkage for future modules
       source_id   INTEGER,
+      status      TEXT    NOT NULL DEFAULT 'ready',
+      source_key  TEXT,
+      course      TEXT,
+      course_stage INTEGER,
       created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -51,13 +87,36 @@ export function runMigrations(db) {
       reviewed_at TEXT    NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE INDEX IF NOT EXISTS idx_study_cards_due      ON study_cards(due_date);
-    CREATE INDEX IF NOT EXISTS idx_study_cards_lang     ON study_cards(language);
-    CREATE INDEX IF NOT EXISTS idx_study_reviews_card   ON study_reviews(card_id);
-    CREATE INDEX IF NOT EXISTS idx_study_reviews_date   ON study_reviews(reviewed_at);
+    CREATE TABLE IF NOT EXISTS study_ai_cache (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      task          TEXT NOT NULL,
+      input_hash    TEXT NOT NULL,
+      response_json TEXT NOT NULL,
+      created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  // Guarded upgrades for databases created before Phase 2.
+  addColumn(db, "study_cards", "status", "TEXT NOT NULL DEFAULT 'ready'");
+  addColumn(db, "study_cards", "source_key", "TEXT");
+  addColumn(db, "study_cards", "course", "TEXT");
+  addColumn(db, "study_cards", "course_stage", "INTEGER");
+
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_study_cards_due ON study_cards(due_date);
+    CREATE INDEX IF NOT EXISTS idx_study_cards_lang ON study_cards(language);
+    CREATE INDEX IF NOT EXISTS idx_study_cards_course ON study_cards(course, course_stage);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_study_cards_source_key
+      ON study_cards(source_key) WHERE source_key IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_study_reviews_card ON study_reviews(card_id);
+    CREATE INDEX IF NOT EXISTS idx_study_reviews_date ON study_reviews(reviewed_at);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_cache_task_hash
+      ON study_ai_cache(task, input_hash);
 
     INSERT OR IGNORE INTO settings VALUES ('study_new_en_daily', '10');
     INSERT OR IGNORE INTO settings VALUES ('study_new_kr_daily', '5');
     INSERT OR IGNORE INTO settings VALUES ('study_notify_time', '20:00');
   `);
+
+  seedKoreanCourse(db);
 }

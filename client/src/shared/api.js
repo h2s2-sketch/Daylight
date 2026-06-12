@@ -25,6 +25,10 @@ export const api = {
   getSettings:  ()                => req("GET",    "/settings"),
   patchSettings:(body)            => req("PATCH",  "/settings", body),
   getStats:     ()                => req("GET",    "/stats"),
-  quickAddCard: (word)           => req("POST",   "/cards/quick-add", { word }),
+  quickAddCard: (word, language = "en") => req("POST", "/cards/quick-add", { word, language }),
   retryCard:    (id)             => req("POST",   `/cards/${id}/retry`),
+  getHangulProgress: ()          => req("GET",    "/hangul/progress"),
+  getHangulQueue: ()             => req("GET",    "/hangul/queue"),
+  answerHangulCard: (id, correct, scheduled) => req("POST", `/hangul/cards/${id}/answer`, { correct, scheduled }),
+  getHangulOverview: ()          => req("GET",    "/hangul/overview"),
 };
