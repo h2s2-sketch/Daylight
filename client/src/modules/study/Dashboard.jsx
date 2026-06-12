@@ -215,125 +215,163 @@ export default function Dashboard({ onStart, onHangul, onAddCard, theme, onToggl
     .filter(([lang, s]) => s.slipping && !dismissed.includes(lang));
 
   return (
-    <div className="fade-enter" s…3276 tokens truncated…       oklch(0.72 0.12 252);
-  --en-soft:   oklch(0.72 0.12 252 / 0.13);
-  --en-soft-2: oklch(0.72 0.12 252 / 0.20);
-  --kr:        oklch(0.74 0.12 28);
-  --kr-soft:   oklch(0.74 0.12 28 / 0.14);
-  --kr-soft-2: oklch(0.74 0.12 28 / 0.22);
+    <div className="fade-enter" style={{
+      flex: 1, display: "flex", flexDirection: "column", overflowY: "auto",
+      padding: "calc(env(safe-area-inset-top) + 20px) var(--pad) 28px",
+      WebkitOverflowScrolling: "touch",
+    }}>
+      {/* header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 14, color: "var(--muted)", fontWeight: 500 }}>{dateStr}</div>
+          <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 3, color: "var(--text)", lineHeight: 1.15 }}>
+            {greeting()}.
+          </h1>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginTop: 2 }}>
+          <div className="tnum tap" style={{
+            display: "flex", alignItems: "center", gap: 5,
+            background: "var(--surface)", border: "1px solid var(--border)",
+            boxShadow: "var(--shadow)", borderRadius: 99, padding: "7px 12px 7px 10px",
+            fontSize: 14.5, fontWeight: 700, color: "var(--text)",
+          }}>
+            <span style={{ fontSize: 15 }}>🔥</span>
+            <span>{streak.current}</span>
+          </div>
+          <button className="tap" onClick={onToggleTheme} aria-label="Toggle theme" style={{
+            width: 38, height: 38, borderRadius: 99, display: "grid", placeItems: "center",
+            background: "var(--surface)", border: "1px solid var(--border)",
+            boxShadow: "var(--shadow)", color: "var(--text-soft)",
+          }}>
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
+      </div>
 
-  --again:      oklch(0.70 0.13 25);
-  --again-soft: oklch(0.70 0.13 25 / 0.15);
-  --easy:       oklch(0.70 0.10 155);
-  --easy-soft:  oklch(0.70 0.10 155 / 0.16);
-}
+      {/* summary line */}
+      <p className="tnum" style={{ marginTop: 18, fontSize: 15, color: "var(--text-soft)", lineHeight: 1.45 }}>
+        {totalDue > 0
+          ? <>You have <b style={{ color: "var(--text)", fontWeight: 700 }}>{totalDue} cards</b> waiting across two languages.</>
+          : <>All caught up for today. 🎉</>}
+      </p>
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      {/* queue cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+        <QueueCard lang="en" data={queue.en} onStart={onStart} />
+        <QueueCard lang="kr" data={queue.kr} onStart={hangul?.foundation?.complete ? onStart : onHangul} />
+      </div>
 
-html, body { height: 100%; }
+      <HangulProgressCard progress={hangul} onStart={onHangul} />
 
-body {
-  font-family: var(--font);
-  background: var(--bg-sunken);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  overscroll-behavior: none;
-}
+      {/* primary CTA */}
+      <button className="tap" onClick={() => {
+        if (!hangul?.foundation?.complete && (queue.kr?.due || queue.kr?.fresh)) onHangul();
+        else onStart(null);
+      }} disabled={totalDue === 0}
+        style={{
+          marginTop: 18, width: "100%", padding: "17px", borderRadius: "var(--r-md)",
+          background: totalDue === 0 ? "var(--bg-sunken)" : "var(--text)",
+          color: totalDue === 0 ? "var(--faint)" : "var(--bg)",
+          fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+          boxShadow: totalDue === 0 ? "none" : "var(--shadow-lift)",
+          transition: "transform .16s ease, opacity .16s ease",
+          cursor: totalDue === 0 ? "default" : "pointer",
+        }}
+        onPointerDown={(e) => totalDue > 0 && (e.currentTarget.style.transform = "scale(0.985)")}
+        onPointerUp={(e)   => e.currentTarget.style.transform = "scale(1)"}
+        onPointerLeave={(e)=> e.currentTarget.style.transform = "scale(1)"}>
+        Start Review
+        <ArrowRight size={19} sw={2} />
+      </button>
 
-#root { height: 100%; }
+      {/* AI quick-add */}
+      <div style={{ marginTop: 10 }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+          {[{ id: "en", label: "English" }, { id: "kr", label: "Korean" }].map((option) => {
+            const disabled = option.id === "kr" && !hangul?.foundation?.complete;
+            const active = quickLanguage === option.id;
+            return (
+              <button key={option.id} type="button" className="tap" disabled={disabled}
+                onClick={() => setQuickLanguage(option.id)}
+                title={disabled ? "Complete Hangul foundation first" : undefined}
+                style={{
+                  padding: "6px 11px", borderRadius: 99, fontSize: 12.5, fontWeight: 650,
+                  color: active ? "var(--bg)" : disabled ? "var(--faint)" : "var(--text-soft)",
+                  background: active ? (option.id === "en" ? "var(--en)" : "var(--kr)") : "var(--surface)",
+                  border: "1px solid var(--border)", opacity: disabled ? 0.55 : 1,
+                }}>
+                {option.label}{disabled ? " - locked" : ""}
+              </button>
+            );
+          })}
+        </div>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          const word = quickWord.trim();
+          if (!word || quickAdding) return;
+          setQuickAdding(true);
+          setQuickDone("");
+          try {
+            await api.quickAddCard(word, quickLanguage);
+            setQuickWord("");
+            setQuickDone(`"${word}" added — AI filling in background`);
+            setTimeout(() => setQuickDone(""), 3000);
+          } catch (err) {
+            setQuickDone(`Error: ${err.message}`);
+          } finally {
+            setQuickAdding(false);
+          }
+        }} style={{ display: "flex", gap: 8 }}>
+          <input
+            value={quickWord}
+            onChange={(e) => setQuickWord(e.target.value)}
+            placeholder={quickLanguage === "kr" ? "Quick-add Korean word..." : "Quick-add English word..."}
+            disabled={quickAdding}
+            style={{
+              flex: 1, padding: "13px 14px", borderRadius: "var(--r-md)",
+              background: "var(--surface)", border: "1px solid var(--border)",
+              boxShadow: "var(--shadow)", fontSize: 15, color: "var(--text)",
+              fontFamily: "var(--font)", outline: "none",
+              opacity: quickAdding ? 0.6 : 1,
+            }}
+          />
+          <button type="submit" disabled={quickAdding || !quickWord.trim()} className="tap"
+            style={{
+              padding: "13px 18px", borderRadius: "var(--r-md)",
+              background: quickLanguage === "kr" ? "var(--kr)" : "var(--en)", color: "#fff",
+              fontSize: 15, fontWeight: 700,
+              opacity: (quickAdding || !quickWord.trim()) ? 0.5 : 1,
+              flexShrink: 0,
+            }}>
+            {quickAdding ? "…" : "Add"}
+          </button>
+        </form>
+        {quickDone && (
+          <div style={{ marginTop: 7, fontSize: 13, color: "var(--muted)", paddingLeft: 2 }}>
+            {quickDone}
+          </div>
+        )}
+        <button className="tap" onClick={onAddCard}
+          style={{
+            marginTop: 8, width: "100%", padding: "11px", borderRadius: "var(--r-md)",
+            background: "transparent", border: "none",
+            fontSize: 13.5, fontWeight: 500, color: "var(--faint)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>
+          <Plus size={14} />
+          Manual card form
+        </button>
+      </div>
 
-.app-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border-strong);
-  border-top-color: var(--kr);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.connection-banner {
-  position: absolute;
-  z-index: 50;
-  top: env(safe-area-inset-top);
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: calc(100% - 28px);
-  margin-top: 8px;
-  padding: 8px 13px;
-  border: 1px solid var(--border-strong);
-  border-radius: 99px;
-  background: var(--text);
-  color: var(--bg);
-  box-shadow: var(--shadow-lift);
-  font-size: 12.5px;
-  font-weight: 650;
-  text-align: center;
-}
-
-.install-card {
-  position: absolute;
-  z-index: 45;
-  left: var(--pad);
-  right: var(--pad);
-  bottom: calc(env(safe-area-inset-bottom) + 78px);
-  display: grid;
-  grid-template-columns: 42px 1fr auto auto;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 10px 11px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: color-mix(in srgb, var(--surface) 94%, transparent);
-  box-shadow: var(--shadow-lift);
-  backdrop-filter: blur(14px);
-}
-
-.install-card img { width: 42px; height: 42px; border-radius: 11px; }
-.install-card div { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.install-card strong { font-size: 14px; color: var(--text); }
-.install-card span { font-size: 12px; color: var(--muted); line-height: 1.3; }
-.install-card button:not(.install-dismiss) {
-  padding: 8px 12px;
-  border-radius: 99px;
-  background: var(--text);
-  color: var(--bg);
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.install-card .install-dismiss { padding: 5px; color: var(--muted); font-size: 17px; line-height: 1; }
-
-@media (max-width: 390px) {
-  .install-card { grid-template-columns: 38px 1fr auto; }
-  .install-card img { width: 38px; height: 38px; }
-  .install-card .install-dismiss { display: none; }
-}
-
-button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-a { color: inherit; text-decoration: none; }
-
-.tap { -webkit-tap-highlight-color: transparent; user-select: none; }
-.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
-.kr { font-family: var(--font-kr); }
-.cn { font-family: var(--font-cn); }
-
-.fade-enter { animation: fadeUp 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes ripple {
-  from { opacity: 0.5; transform: scale(1); }
-  to   { opacity: 0;   transform: scale(1.6); }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      {/* below the fold */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 26 }}>
+        <WeekStrip week={week} />
+        {slipBanners.map(([lang, s]) => (
+          <SlipBanner key={lang} language={lang} daysSince={s.daysSince} onStart={onStart}
+            onDismiss={() => setDismissed((d) => [...d, lang])} />
+        ))}
+      </div>
+    </div>
+  );
 }
