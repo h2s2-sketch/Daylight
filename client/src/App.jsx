@@ -9,6 +9,7 @@ import SettingsPage from "./modules/study/SettingsPage.jsx";
 import HangulDrill from "./modules/study/HangulDrill.jsx";
 import { api } from "./shared/api.js";
 import AppStatus from "./shell/AppStatus.jsx";
+import LoginScreen from "./shell/LoginScreen.jsx";
 
 const THEME_KEY = "lumi-theme";
 
@@ -22,6 +23,13 @@ export default function App() {
   const [queue, setQueue]   = useState([]);
   const [tally, setTally]   = useState(null);
   const [streakCache, setStreakCache] = useState(null);
+  const [auth, setAuth] = useState("checking");
+
+  useEffect(() => {
+    api.getAuthStatus()
+      .then((status) => setAuth(status.authenticated ? "authenticated" : "required"))
+      .catch(() => setAuth("required"));
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -50,6 +58,14 @@ export default function App() {
   }
 
   const showNav = screen === "dashboard" || tab === "settings" || screen === "cards";
+
+  if (auth === "checking") return (
+    <div className="app"><div className="auth-loading"><span className="app-spinner" /></div></div>
+  );
+
+  if (auth === "required") return (
+    <div className="app"><LoginScreen onLogin={() => setAuth("authenticated")} /></div>
+  );
 
   return (
     <div className="app">
