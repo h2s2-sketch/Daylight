@@ -6,6 +6,7 @@ import Summary from "./modules/study/Summary.jsx";
 import AddCard from "./modules/study/AddCard.jsx";
 import Cards from "./modules/study/Cards.jsx";
 import SettingsPage from "./modules/study/SettingsPage.jsx";
+import HangulDrill from "./modules/study/HangulDrill.jsx";
 import { api } from "./shared/api.js";
 
 const THEME_KEY = "lumi-theme";
@@ -53,6 +54,7 @@ export default function App() {
       {tab === "study" && screen === "dashboard" && (
         <Dashboard
           onStart={startReview}
+          onHangul={() => setScreen("hangul-drill")}
           onAddCard={() => setScreen("add-card")}
           theme={theme}
           onToggleTheme={toggleTheme}
@@ -64,6 +66,9 @@ export default function App() {
           onGrade={handleGrade}
           onExit={() => setScreen("dashboard")}
         />
+      )}
+      {tab === "study" && screen === "hangul-drill" && (
+        <HangulDrill onDone={() => setScreen("dashboard")} />
       )}
       {tab === "study" && screen === "summary" && tally && (
         <Summary

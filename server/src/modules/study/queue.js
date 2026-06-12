@@ -1,5 +1,6 @@
 import { getDb } from "../../db/connection.js";
 import { getSetting } from "../../services/settings.js";
+import { syncCoreUnlocks } from "../hangul/progress.js";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -32,6 +33,7 @@ function newCardsReviewedToday(db, language) {
  * Returns array of card rows ordered: overdue → due today → new.
  */
 export function buildQueue(language = null) {
+  if (!language || language === "kr") syncCoreUnlocks();
   const db = getDb();
   const today = todayIso();
 
@@ -85,6 +87,7 @@ export function buildQueue(language = null) {
  * Queue counts for dashboard (per language).
  */
 export function getQueueCounts() {
+  syncCoreUnlocks();
   const db = getDb();
   const today = todayIso();
   const result = {};
@@ -111,15 +114,16 @@ export function getQueueCounts() {
       )
       .get(lang, today).n;
 
-    const fresh = db
-      .prepare(
-        `SELECT COUNT(*) AS n FROM study_cards
-         WHERE language = ?
-           AND id NOT IN (SELECT DISTINCT card_id FROM study_reviews)
-           AND (status IS NULL OR status = 'ready')
-         LIMIT ?`
-      )
-      .get(lang, remainingNew).n;
+    const fresh = remainingNew === 0
+      ? 0
+      : db
+        .prepare(
+          `SELECT COUNT(*) AS n FROM study_cards
+           WHERE language = ?
+             AND id NOT IN (SELECT DISTINCT card_id FROM study_reviews)
+             AND (status IS NULL OR status = 'ready')`
+        )
+        .get(lang).n;
 
     const totalCards = db
       .prepare("SELECT COUNT(*) AS n FROM study_cards WHERE language = ?")

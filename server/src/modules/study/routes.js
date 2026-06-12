@@ -7,17 +7,20 @@ import { getDb } from "../../db/connection.js";
 import { getAllSettings, setSetting } from "../../services/settings.js";
 import { runTask } from "../../shared/ai.js";
 import { getCached, putCache } from "./ai.repo.js";
+import { getHangulProgress, syncCoreUnlocks } from "../hangul/progress.js";
 
 const router = Router();
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 router.get("/dashboard", (req, res) => {
+  syncCoreUnlocks();
   res.json({
     queue: getQueueCounts(),
     streak: getStreak(),
     slip: getSlipStatus(),
     week: getWeekActivity(),
+    hangul: getHangulProgress(),
   });
 });
 
@@ -55,12 +58,18 @@ router.post("/cards", (req, res) => {
 // ─── AI Quick-Add ─────────────────────────────────────────────────────────────
 
 router.post("/cards/quick-add", (req, res) => {
-  const { word } = req.body;
+  const { word, language = "en" } = req.body;
   if (!word || !word.trim()) {
     return res.status(400).json({ error: "word required" });
   }
+  if (!["en", "kr"].includes(language)) {
+    return res.status(400).json({ error: "language must be en or kr" });
+  }
+  if (language === "kr" && !getHangulProgress().foundation.complete) {
+    return res.status(409).json({ error: "Complete the Hangul foundation before adding Korean cards" });
+  }
   const card = createCard({
-    language: "en",
+    language,
     type: "vocabulary",
     front: word.trim(),
     back: "…",
@@ -69,7 +78,7 @@ router.post("/cards/quick-add", (req, res) => {
     status: "pending",
   });
   // Fill in background — intentionally not awaited
-  fillCard(card.id, word.trim()).catch(() => {});
+  fillCard(card.id, word.trim(), language).catch(() => {});
   res.status(201).json(serializeCard(card));
 });
 
@@ -81,28 +90,29 @@ router.post("/cards/:id/retry", async (req, res) => {
     return res.status(400).json({ error: "Card is not in failed state" });
   }
   getDb().prepare("UPDATE study_cards SET status='pending' WHERE id=?").run(id);
-  fillCard(id, card.front).catch(() => {});
+  fillCard(id, card.front, card.language).catch(() => {});
   res.json(serializeCard(getCard(id)));
 });
 
-async function fillCard(id, word) {
+async function fillCard(id, word, language) {
   const db = getDb();
-  const input = { word };
+  const input = { word, language };
+  const task = language === "kr" ? "autofill_kr" : "autofill_en";
   try {
-    let result = getCached("autofill", input);
+    let result = getCached(task, input);
     if (!result) {
-      result = await runTask("autofill", input);
-      putCache("autofill", input, result);
+      result = await runTask(task, input);
+      putCache(task, input, result);
     }
     db.prepare(
       `UPDATE study_cards
        SET back=?, context=?, tags=?, status='ready'
        WHERE id=?`
     ).run(
-      [result.definition, result.ipa ? `/${result.ipa.replace(/^\/|\/$/g, "")}/` : null, result.translation_zh_tw]
+      [result.definition, result.pronunciation, result.translation_zh_tw]
         .filter(Boolean).join(" · "),
       result.example_general
-        ? `${result.example_general}\n${result.example_civil_eng || ""}`.trim()
+        ? `${result.example_general}\n${result.example_specialized || ""}`.trim()
         : null,
       JSON.stringify(result.tags || []),
       id
