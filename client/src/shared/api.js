@@ -14,6 +14,19 @@ async function req(method, path, body) {
 }
 
 export const api = {
+  getAuthStatus: () => fetch("/api/auth/status", { credentials: "include" }).then((res) => res.json()),
+  login: async (username, password) => {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Login failed");
+    return data;
+  },
+  logout: () => fetch("/api/auth/logout", { method: "POST", credentials: "include" }),
   getDashboard: ()                => req("GET",    "/dashboard"),
   getQueue:     (language)        => req("GET",    `/queue${language ? `?language=${language}` : ""}`),
   getCards:     (params = {})     => req("GET",    `/cards?${new URLSearchParams(params)}`),
