@@ -94,6 +94,31 @@ export function runMigrations(db) {
       response_json TEXT NOT NULL,
       created_at    TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS task_projects (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      title       TEXT NOT NULL,
+      description TEXT,
+      status      TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','done','archived')),
+      color       TEXT NOT NULL DEFAULT '#4F46E5',
+      created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS task_items (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      title       TEXT NOT NULL,
+      project_id  INTEGER REFERENCES task_projects(id) ON DELETE SET NULL,
+      status      TEXT NOT NULL DEFAULT 'todo' CHECK(status IN ('todo','doing','done')),
+      priority    TEXT NOT NULL DEFAULT 'low' CHECK(priority IN ('low','medium','high')),
+      due_date    TEXT,
+      notes       TEXT,
+      tags        TEXT NOT NULL DEFAULT '[]',
+      recurrence  TEXT,
+      created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+      completed_at TEXT
+    );
   `);
 
   // Guarded upgrades for databases created before Phase 2.
@@ -112,6 +137,9 @@ export function runMigrations(db) {
     CREATE INDEX IF NOT EXISTS idx_study_reviews_date ON study_reviews(reviewed_at);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_cache_task_hash
       ON study_ai_cache(task, input_hash);
+    CREATE INDEX IF NOT EXISTS idx_task_items_due ON task_items(due_date, status);
+    CREATE INDEX IF NOT EXISTS idx_task_items_project ON task_items(project_id, status);
+    CREATE INDEX IF NOT EXISTS idx_task_projects_status ON task_projects(status);
 
     INSERT OR IGNORE INTO settings VALUES ('study_new_en_daily', '10');
     INSERT OR IGNORE INTO settings VALUES ('study_new_kr_daily', '5');
