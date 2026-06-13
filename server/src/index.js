@@ -8,6 +8,8 @@ import studyRouter from "./modules/study/routes.js";
 import hangulRouter from "./modules/hangul/routes.js";
 import { getDb } from "./db/connection.js";
 import { authRouter, requireAuth } from "./services/auth.js";
+import tasksRouter from "./modules/tasks/routes.js";
+import dataRouter from "./modules/data/routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 mkdirSync(path.join(__dirname, "../../data"), { recursive: true });
@@ -17,13 +19,15 @@ const PORT = process.env.PORT || 3001;
 app.set("trust proxy", 1);
 
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173", credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: "20mb" }));
 
 app.use("/api/auth", authRouter);
 
 // All study API endpoints live under /api/study
 app.use("/api/study", requireAuth, studyRouter);
 app.use("/api/study/hangul", requireAuth, hangulRouter);
+app.use("/api/tasks", requireAuth, tasksRouter);
+app.use("/api/data", requireAuth, dataRouter);
 
 // Health check
 app.get("/api/health", (_, res) => res.json({ ok: true }));
@@ -37,6 +41,11 @@ if (existsSync(clientDist)) {
     res.sendFile(path.join(clientDist, "index.html"));
   });
 }
+
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+});
 
 // Boot DB (migrations run on first connection)
 getDb();
