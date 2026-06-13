@@ -55,7 +55,7 @@ export default function AppStatus() {
         <div className="install-card" role="status">
           <img src="/icons/lumi.svg" alt="" />
           <div>
-            <strong>Install Lumi</strong>
+            <strong>Install Daylight</strong>
             <span>{isIos ? "Tap Share, then Add to Home Screen." : "Open faster from your home screen."}</span>
           </div>
           {installPrompt && <button type="button" onClick={install}>Install</button>}

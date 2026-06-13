@@ -99,7 +99,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
           borderRadius: "var(--r-md)", padding: "16px 18px",
           fontSize: 13.5, color: "var(--text-soft)", lineHeight: 1.6,
         }}>
-          <b style={{ color: "var(--text)" }}>Lumi</b> — Phase 1 MVP<br />
+          <b style={{ color: "var(--text)" }}>Daylight</b> — personal study workspace<br />
           SM-2 spaced repetition · English + Korean · SQLite<br />
           <span style={{ color: "var(--faint)" }}>A streak counts when the due queue is cleared or ≥15 cards reviewed.</span>
         </div>

@@ -24,7 +24,7 @@ export default function LoginScreen({ onLogin }) {
   return (
     <main className="login-screen">
       <img src="/icons/lumi.svg" alt="" className="login-logo" />
-      <h1>Welcome to Lumi</h1>
+      <h1>Welcome to Daylight</h1>
       <p>Sign in to continue your study session.</p>
       <form onSubmit={submit} className="login-form">
         <label>

@@ -182,7 +182,7 @@ export default function Dashboard({ onStart, onHangul, onAddCard, theme, onToggl
     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "var(--pad)", textAlign: "center" }}>
       <div style={{ fontSize: 42, lineHeight: 1 }}>☁️</div>
       <h1 style={{ marginTop: 15, fontSize: 21, color: "var(--text)" }}>
-        {navigator.onLine ? "Lumi cannot reach your study data" : "You are offline"}
+        {navigator.onLine ? "Daylight cannot reach your study data" : "You are offline"}
       </h1>
       <p style={{ marginTop: 8, maxWidth: 320, color: "var(--muted)", fontSize: 14.5, lineHeight: 1.5 }}>
         {navigator.onLine

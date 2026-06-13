@@ -9,13 +9,11 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
   });
 }
 
-// App shell: phone-width column, centered on desktop
 const appShellStyle = document.createElement("style");
 appShellStyle.textContent = `
 .app {
   position: relative;
   width: 100%;
-  max-width: var(--maxw);
   height: 100%;
   min-height: 100dvh;
   margin: 0 auto;
@@ -25,19 +23,11 @@ appShellStyle.textContent = `
   overflow: hidden;
   transition: background 0.5s ease, color 0.5s ease;
 }
-@media (min-width: 680px) {
-  body { padding: 26px 0; }
-  .app {
-    min-height: 0;
-    height: calc(100dvh - 52px);
-    border-radius: 30px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-lift);
-  }
-}
+.focus-app { max-width: var(--maxw); }
+@media (min-width: 680px) { .focus-app { min-height: 0; height: calc(100dvh - 52px); margin: 26px auto; border-radius: 30px; border: 1px solid var(--border); box-shadow: var(--shadow-lift); } }
 @media (display-mode: standalone) {
   body { padding: 0; background: var(--bg); }
-  .app { min-height: 100dvh; height: 100dvh; border: 0; border-radius: 0; }
+  .focus-app { min-height: 100dvh; height: 100dvh; margin: 0; border: 0; border-radius: 0; }
 }
 `;
 document.head.appendChild(appShellStyle);

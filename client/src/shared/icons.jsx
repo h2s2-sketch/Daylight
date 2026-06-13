@@ -60,6 +60,28 @@ export const BookOpen = (p) => (
   </S>
 );
 
+export const Today = (p) => (
+  <S {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19" />
+  </S>
+);
+
+export const Tasks = (p) => (
+  <S {...p}>
+    <path d="M9 6h11M9 12h11M9 18h11" />
+    <path d="m4 6 1.2 1.2L7.5 4.8M4 12.2l1.2 1.2L7.5 11M4 18.2l1.2 1.2L7.5 17" />
+  </S>
+);
+
+export const Projects = (p) => (
+  <S {...p}><path d="M3 7a2 2 0 0 1 2-2h3.5l2 2.3H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></S>
+);
+
+export const Flame = (p) => (
+  <S {...p}><path d="M12 3c1 3-1.5 4-1.5 6.5A2.5 2.5 0 0 0 13 12c1-1 1-2.5 1-2.5 1.5 1.2 3 3.2 3 5.5a5 5 0 0 1-10 0c0-2.8 2-4.2 3-6 .6-1.1 1.5-3 2-6z" /></S>
+);
+
 export const Settings = (p) => (
   <S {...p}>
     <circle cx="12" cy="12" r="3" />
