@@ -13,6 +13,31 @@ async function req(method, path, body) {
   return data;
 }
 
+async function taskReq(method, path, body) {
+  const res = await fetch(`/api/tasks${path}`, {
+    method,
+    credentials: "include",
+    headers: body ? { "Content-Type": "application/json" } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 204) return null;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || res.statusText);
+  return data;
+}
+
+async function dataReq(method, path, body) {
+  const res = await fetch(`/api/data${path}`, {
+    method,
+    credentials: "include",
+    headers: body ? { "Content-Type": "application/json" } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || res.statusText);
+  return data;
+}
+
 export const api = {
   getAuthStatus: () => fetch("/api/auth/status", { credentials: "include" }).then((res) => res.json()),
   login: async (username, password) => {
@@ -45,4 +70,20 @@ export const api = {
   getHangulQueue: ()             => req("GET",    "/hangul/queue"),
   answerHangulCard: (id, correct, scheduled) => req("POST", `/hangul/cards/${id}/answer`, { correct, scheduled }),
   getHangulOverview: ()          => req("GET",    "/hangul/overview"),
+  getTaskDashboard: ()           => taskReq("GET", "/dashboard"),
+  getTasks: (params = {})        => taskReq("GET", `/?${new URLSearchParams(params)}`),
+  createTask: (body)             => taskReq("POST", "/", body),
+  updateTask: (id, body)         => taskReq("PATCH", `/items/${id}`, body),
+  deleteTask: (id)               => taskReq("DELETE", `/items/${id}`),
+  getProjects: ()                => taskReq("GET", "/projects/list"),
+  createProject: (body)          => taskReq("POST", "/projects", body),
+  updateProject: (id, body)      => taskReq("PATCH", `/projects/${id}`, body),
+  deleteProject: (id)            => taskReq("DELETE", `/projects/${id}`),
+  exportData: async () => {
+    const res = await fetch("/api/data/export", { credentials: "include" });
+    if (!res.ok) throw new Error("Could not export your data");
+    return res.blob();
+  },
+  importData: (body) => dataReq("POST", "/import", body),
+  createServerBackup: () => dataReq("POST", "/backup"),
 };
