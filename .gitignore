@@ -1,5 +1,7 @@
 node_modules/
 data/
+!server/src/modules/data/
+!server/src/modules/data/**
 .env
 client/dist/
 work/
