@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "test": "node --test src/**/*.test.js"
+    "test": "node --test src/**/*.test.js",
+    "backup": "node src/scripts/backup.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",
