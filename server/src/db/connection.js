@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { runMigrations } from "./migrate.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, "../../../data/app.db");
+export const DB_PATH = path.join(__dirname, "../../../data/app.db");
 
 let _db = null;
 
