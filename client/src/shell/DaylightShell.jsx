@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { BookOpen, Flame, Projects, Settings, Tasks, Today } from "../shared/icons.jsx";
+import { api } from "../shared/api.js";
 
 const NAV = [
   { id: "today", label: "Today", Icon: Today },
@@ -28,10 +30,26 @@ function Navigation({ active, onNavigate, mobile = false }) {
 
 export default function DaylightShell({ active, streak = 0, onNavigate, children }) {
   const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [desktopPhoto, setDesktopPhoto] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
+
+  useEffect(() => {
+    api.getSettings().then((settings) => setPhotoUrl(settings.sidebar_photo_url || "")).catch(() => {});
+    const update = (event) => setPhotoUrl(event.detail || "");
+    window.addEventListener("daylight-photo", update);
+    return () => window.removeEventListener("daylight-photo", update);
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const update = () => setDesktopPhoto(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   return (
     <div className="daylight-shell">
-      <aside className="daylight-photo-panel">
+      <aside className="daylight-photo-panel" style={desktopPhoto && photoUrl ? { backgroundImage: `url(${photoUrl})` } : undefined}>
         <div className="daylight-photo-shade" />
         <div className="daylight-brand">
           <span className="daylight-brand-mark"><Today size={17} sw={2.2} /></span>
