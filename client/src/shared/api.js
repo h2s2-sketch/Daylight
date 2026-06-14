@@ -70,7 +70,7 @@ export const api = {
   getHangulQueue: ()             => req("GET",    "/hangul/queue"),
   answerHangulCard: (id, correct, scheduled) => req("POST", `/hangul/cards/${id}/answer`, { correct, scheduled }),
   getHangulOverview: ()          => req("GET",    "/hangul/overview"),
-  getTaskDashboard: ()           => taskReq("GET", "/dashboard"),
+  getTaskDashboard: (date)       => taskReq("GET", `/dashboard${date ? `?date=${date}` : ""}`),
   getTasks: (params = {})        => taskReq("GET", `/?${new URLSearchParams(params)}`),
   createTask: (body)             => taskReq("POST", "/", body),
   updateTask: (id, body)         => taskReq("PATCH", `/items/${id}`, body),
@@ -86,4 +86,22 @@ export const api = {
   },
   importData: (body) => dataReq("POST", "/import", body),
   createServerBackup: () => dataReq("POST", "/backup"),
+  uploadSidebarPhoto: async (file) => {
+    const res = await fetch("/api/appearance/sidebar-photo", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      body: file,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Could not upload image");
+    return data;
+  },
+  resetSidebarPhoto: () => fetch("/api/appearance/sidebar-photo", {
+    method: "DELETE", credentials: "include",
+  }).then(async (res) => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Could not restore default image");
+    return data;
+  }),
 };
