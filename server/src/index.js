@@ -10,6 +10,7 @@ import { getDb } from "./db/connection.js";
 import { authRouter, requireAuth } from "./services/auth.js";
 import tasksRouter from "./modules/tasks/routes.js";
 import dataRouter from "./modules/data/routes.js";
+import appearanceRouter, { UPLOAD_DIR } from "./modules/appearance/routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 mkdirSync(path.join(__dirname, "../../data"), { recursive: true });
@@ -28,6 +29,9 @@ app.use("/api/study", requireAuth, studyRouter);
 app.use("/api/study/hangul", requireAuth, hangulRouter);
 app.use("/api/tasks", requireAuth, tasksRouter);
 app.use("/api/data", requireAuth, dataRouter);
+app.use("/api/appearance/sidebar-photo", requireAuth, express.raw({ type: ["image/png", "image/jpeg", "image/webp", "application/octet-stream"], limit: "8mb" }));
+app.use("/api/appearance", requireAuth, appearanceRouter);
+app.use("/uploads", requireAuth, express.static(UPLOAD_DIR, { fallthrough: false, maxAge: "1d" }));
 
 // Health check
 app.get("/api/health", (_, res) => res.json({ ok: true }));
@@ -44,6 +48,9 @@ if (existsSync(clientDist)) {
 
 app.use((err, _req, res, _next) => {
   console.error(err);
+  if (err?.type === "entity.too.large") {
+    return res.status(413).json({ error: "Image is too large. Choose a smaller image and try again." });
+  }
   res.status(500).json({ error: "Internal server error" });
 });
 
