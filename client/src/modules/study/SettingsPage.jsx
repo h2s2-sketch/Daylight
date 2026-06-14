@@ -21,11 +21,29 @@ function ActionButton({ children, disabled, onClick }) {
   );
 }
 
+async function prepareSidebarPhoto(file) {
+  const image = await createImageBitmap(file);
+  const maxSide = 2048;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+  image.close();
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.88));
+  if (!blob) throw new Error("Could not prepare this image. Try a PNG or JPEG file.");
+  return new File([blob], "sidebar-photo.jpg", { type: blob.type });
+}
+
 export default function SettingsPage({ theme, onToggleTheme }) {
   const [settings, setSettings] = useState(null);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const importInput = useRef(null);
+  const photoInput = useRef(null);
 
   useEffect(() => {
     api.getSettings().then(setSettings);
@@ -85,6 +103,40 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     }
   }
 
+  async function uploadPhoto(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setBusy("photo");
+    setMessage("");
+    try {
+      const prepared = await prepareSidebarPhoto(file);
+      const result = await api.uploadSidebarPhoto(prepared);
+      setSettings(result.settings);
+      window.dispatchEvent(new CustomEvent("daylight-photo", { detail: result.url }));
+      setMessage("Sidebar image updated.");
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function resetPhoto() {
+    setBusy("photo");
+    setMessage("");
+    try {
+      const result = await api.resetSidebarPhoto();
+      setSettings(result.settings);
+      window.dispatchEvent(new CustomEvent("daylight-photo", { detail: "" }));
+      setMessage("Default sidebar image restored.");
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
   const numInput = (key, max = 50) => (
     <input className="settings-number" type="number" min="1" max={max}
       value={settings?.[key] ?? ""}
@@ -95,6 +147,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   return (
     <div className="settings-page">
       <h2 className="settings-title">Settings</h2>
+      {message && <div className="settings-message global" role="status">{message}</div>}
 
       <section className="settings-section">
         <div className="settings-heading">Daily new cards</div>
@@ -122,16 +175,29 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             <ActionButton disabled={Boolean(busy)} onClick={createServerBackup}>{busy === "server" ? "Working..." : "Back up now"}</ActionButton>
           </Row>
         </div>
-        {message && <div className="settings-message" role="status">{message}</div>}
       </section>
 
       <section className="settings-section">
         <div className="settings-heading">Appearance</div>
-        <Row label="Dark mode" description="Toggle between light and dark theme.">
-          <button className="tap settings-toggle" onClick={onToggleTheme} aria-label="Toggle dark mode">
-            <span className={theme === "dark" ? "is-dark" : ""} />
-          </button>
-        </Row>
+        <div className="settings-stack">
+          <div className="settings-row photo-setting-row">
+            <div className="sidebar-photo-preview" style={settings?.sidebar_photo_url ? { backgroundImage: `url(${settings.sidebar_photo_url})` } : undefined} />
+            <div className="photo-setting-copy">
+              <div className="settings-label">Sidebar image</div>
+              <div className="settings-description">PNG, JPEG or WebP. Large photos are optimized automatically. Desktop only.</div>
+            </div>
+            <div className="photo-setting-actions">
+              <ActionButton disabled={Boolean(busy)} onClick={() => photoInput.current?.click()}>{busy === "photo" ? "Working..." : "Choose image"}</ActionButton>
+              {settings?.sidebar_photo_url && <button className="tap settings-secondary" disabled={Boolean(busy)} onClick={resetPhoto}>Restore default</button>}
+              <input ref={photoInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={uploadPhoto} />
+            </div>
+          </div>
+          <Row label="Dark mode" description="Toggle between light and dark theme.">
+            <button className="tap settings-toggle" onClick={onToggleTheme} aria-label="Toggle dark mode">
+              <span className={theme === "dark" ? "is-dark" : ""} />
+            </button>
+          </Row>
+        </div>
       </section>
 
       <section>
