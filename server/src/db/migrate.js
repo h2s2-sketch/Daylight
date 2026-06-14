@@ -144,6 +144,7 @@ export function runMigrations(db) {
     INSERT OR IGNORE INTO settings VALUES ('study_new_en_daily', '10');
     INSERT OR IGNORE INTO settings VALUES ('study_new_kr_daily', '5');
     INSERT OR IGNORE INTO settings VALUES ('study_notify_time', '20:00');
+    INSERT OR IGNORE INTO settings VALUES ('sidebar_photo_url', '');
   `);
 
   seedKoreanCourse(db);
