@@ -10,6 +10,22 @@ const NAV = [
   { id: "settings", label: "Settings", Icon: Settings },
 ];
 
+const PHOTO_KEY = "daylight-sidebar-photo";
+
+function cachedPhoto() {
+  try {
+    return localStorage.getItem(PHOTO_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function rememberPhoto(url) {
+  try {
+    localStorage.setItem(PHOTO_KEY, url);
+  } catch {}
+}
+
 function Navigation({ active, onNavigate, mobile = false }) {
   return (
     <nav className={mobile ? "daylight-mobile-nav" : "daylight-side-nav"} aria-label="Main navigation">
@@ -30,12 +46,20 @@ function Navigation({ active, onNavigate, mobile = false }) {
 
 export default function DaylightShell({ active, streak = 0, onNavigate, children }) {
   const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [photoUrl, setPhotoUrl] = useState(cachedPhoto);
   const [desktopPhoto, setDesktopPhoto] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
 
   useEffect(() => {
-    api.getSettings().then((settings) => setPhotoUrl(settings.sidebar_photo_url || "")).catch(() => {});
-    const update = (event) => setPhotoUrl(event.detail || "");
+    api.getSettings().then((settings) => {
+      const url = settings.sidebar_photo_url || "";
+      setPhotoUrl(url);
+      rememberPhoto(url);
+    }).catch(() => {});
+    const update = (event) => {
+      const url = event.detail || "";
+      setPhotoUrl(url);
+      rememberPhoto(url);
+    };
     window.addEventListener("daylight-photo", update);
     return () => window.removeEventListener("daylight-photo", update);
   }, []);
@@ -49,7 +73,12 @@ export default function DaylightShell({ active, streak = 0, onNavigate, children
 
   return (
     <div className="daylight-shell">
-      <aside className="daylight-photo-panel" style={desktopPhoto && photoUrl ? { backgroundImage: `url(${photoUrl})` } : undefined}>
+      <aside
+        className="daylight-photo-panel"
+        style={desktopPhoto
+          ? { backgroundImage: photoUrl === null ? "none" : photoUrl ? `url(${photoUrl})` : undefined }
+          : undefined}
+      >
         <div className="daylight-photo-shade" />
         <div className="daylight-brand">
           <span className="daylight-brand-mark"><Today size={17} sw={2.2} /></span>
@@ -78,3 +107,4 @@ export default function DaylightShell({ active, streak = 0, onNavigate, children
     </div>
   );
 }
+
