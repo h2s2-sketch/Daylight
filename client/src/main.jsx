@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/tokens.css";
 import App from "./App.jsx";
+import MockupPage from "./modules/marketing/MockupPage.jsx";
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
@@ -34,6 +35,6 @@ document.head.appendChild(appShellStyle);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    {window.location.pathname === "/mockup" ? <MockupPage /> : <App />}
   </StrictMode>
 );

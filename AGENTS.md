@@ -64,4 +64,3 @@ For documentation-only work, also verify commands, links, paths, environment nam
 - Keep changes scoped and preserve unrelated user work.
 - Do not rewrite Git history, force-push, delete branches, or change the default branch without explicit approval.
 - Update `HANDOFF.md` when completed work materially changes the current state or next recommended task.
-

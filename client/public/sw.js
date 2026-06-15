@@ -1,4 +1,4 @@
-const CACHE = "daylight-assets-v3";
+const CACHE = "daylight-assets-v4";
 const APP_ASSETS = ["/manifest.webmanifest", "/icons/lumi.svg", "/icons/lumi-192.png", "/icons/lumi-512.png"];
 
 self.addEventListener("install", (event) => {

@@ -7,6 +7,96 @@ function addColumn(db, table, name, definition) {
   }
 }
 
+function tableColumns(db, table) {
+  return new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((column) => column.name));
+}
+
+function migrateTaskSystemV2(db) {
+  const projectColumns = tableColumns(db, "task_projects");
+  const taskColumns = tableColumns(db, "task_items");
+  const projectSql = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'task_projects'").get()?.sql || "";
+  const taskSql = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'task_items'").get()?.sql || "";
+  const needsMigration =
+    !projectColumns.has("area") || !projectColumns.has("goal") || projectSql.includes("archived") ||
+    !taskColumns.has("area") || !taskColumns.has("due_time") || taskSql.includes("todo");
+
+  if (!needsMigration) return;
+
+  const foreignKeysEnabled = db.pragma("foreign_keys", { simple: true });
+  db.pragma("foreign_keys = OFF");
+  try {
+    db.transaction(() => {
+      db.exec(`
+        DROP TABLE IF EXISTS task_items_v2;
+        DROP TABLE IF EXISTS task_projects_v2;
+
+        CREATE TABLE task_projects_v2 (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          title       TEXT NOT NULL,
+          description TEXT,
+          area        TEXT DEFAULT NULL CHECK(area IN ('work','life') OR area IS NULL),
+          status      TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','paused','done')),
+          goal        TEXT,
+          color       TEXT NOT NULL DEFAULT '#4F46E5',
+          created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE task_items_v2 (
+          id           INTEGER PRIMARY KEY AUTOINCREMENT,
+          title        TEXT NOT NULL,
+          project_id   INTEGER REFERENCES task_projects_v2(id) ON DELETE SET NULL,
+          area         TEXT DEFAULT NULL CHECK(area IN ('work','life') OR area IS NULL),
+          status       TEXT NOT NULL DEFAULT 'inbox' CHECK(status IN ('inbox','next','waiting','done')),
+          priority     TEXT NOT NULL DEFAULT 'low' CHECK(priority IN ('low','medium','high')),
+          due_date     TEXT,
+          due_time     TEXT,
+          notes        TEXT,
+          tags         TEXT NOT NULL DEFAULT '[]',
+          recurrence   TEXT,
+          created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at   TEXT NOT NULL DEFAULT (datetime('now')),
+          completed_at TEXT
+        );
+      `);
+
+      const projectArea = projectColumns.has("area") ? "CASE WHEN area IN ('work','life') THEN area ELSE NULL END" : "NULL";
+      const projectGoal = projectColumns.has("goal") ? "goal" : "NULL";
+      db.exec(`
+        INSERT INTO task_projects_v2
+          (id, title, description, area, status, goal, color, created_at, updated_at)
+        SELECT id, title, description, ${projectArea},
+          CASE status WHEN 'archived' THEN 'paused' WHEN 'done' THEN 'done' ELSE 'active' END,
+          ${projectGoal}, color, created_at, updated_at
+        FROM task_projects;
+      `);
+
+      const taskArea = taskColumns.has("area") ? "CASE WHEN area IN ('work','life') THEN area ELSE NULL END" : "NULL";
+      const taskTime = taskColumns.has("due_time") ? "due_time" : "NULL";
+      db.exec(`
+        INSERT INTO task_items_v2
+          (id, title, project_id, area, status, priority, due_date, due_time, notes, tags,
+           recurrence, created_at, updated_at, completed_at)
+        SELECT id, title, project_id, ${taskArea},
+          CASE status WHEN 'done' THEN 'done' WHEN 'doing' THEN 'next'
+            WHEN 'waiting' THEN 'waiting' WHEN 'next' THEN 'next' ELSE 'inbox' END,
+          priority, due_date, ${taskTime}, notes, tags, recurrence, created_at, updated_at, completed_at
+        FROM task_items;
+
+        DROP TABLE task_items;
+        DROP TABLE task_projects;
+        ALTER TABLE task_projects_v2 RENAME TO task_projects;
+        ALTER TABLE task_items_v2 RENAME TO task_items;
+      `);
+    })();
+  } finally {
+    db.pragma(`foreign_keys = ${foreignKeysEnabled ? "ON" : "OFF"}`);
+  }
+
+  const violations = db.pragma("foreign_key_check");
+  if (violations.length) throw new Error("Task system migration failed foreign key validation");
+}
+
 function seedKoreanCourse(db) {
   const today = new Date().toISOString().slice(0, 10);
   const insert = db.prepare(`
@@ -99,7 +189,9 @@ export function runMigrations(db) {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       title       TEXT NOT NULL,
       description TEXT,
-      status      TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','done','archived')),
+      area        TEXT DEFAULT NULL CHECK(area IN ('work','life') OR area IS NULL),
+      status      TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','paused','done')),
+      goal        TEXT,
       color       TEXT NOT NULL DEFAULT '#4F46E5',
       created_at  TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
@@ -109,9 +201,11 @@ export function runMigrations(db) {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       title       TEXT NOT NULL,
       project_id  INTEGER REFERENCES task_projects(id) ON DELETE SET NULL,
-      status      TEXT NOT NULL DEFAULT 'todo' CHECK(status IN ('todo','doing','done')),
+      area        TEXT DEFAULT NULL CHECK(area IN ('work','life') OR area IS NULL),
+      status      TEXT NOT NULL DEFAULT 'inbox' CHECK(status IN ('inbox','next','waiting','done')),
       priority    TEXT NOT NULL DEFAULT 'low' CHECK(priority IN ('low','medium','high')),
       due_date    TEXT,
+      due_time    TEXT,
       notes       TEXT,
       tags        TEXT NOT NULL DEFAULT '[]',
       recurrence  TEXT,
@@ -126,6 +220,8 @@ export function runMigrations(db) {
   addColumn(db, "study_cards", "source_key", "TEXT");
   addColumn(db, "study_cards", "course", "TEXT");
   addColumn(db, "study_cards", "course_stage", "INTEGER");
+
+  migrateTaskSystemV2(db);
 
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_study_cards_due ON study_cards(due_date);
@@ -145,6 +241,7 @@ export function runMigrations(db) {
     INSERT OR IGNORE INTO settings VALUES ('study_new_kr_daily', '5');
     INSERT OR IGNORE INTO settings VALUES ('study_notify_time', '20:00');
     INSERT OR IGNORE INTO settings VALUES ('sidebar_photo_url', '');
+    INSERT OR IGNORE INTO settings VALUES ('sidebar_style', 'personal_photo');
   `);
 
   seedKoreanCourse(db);

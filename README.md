@@ -94,4 +94,3 @@ The production server builds the frontend into `client/dist`, then Express serve
 - Back up the database before deployment or data migrations.
 - Do not delete or rename branches until their merge status has been checked.
 - AI assistants must read `AGENTS.md` and `HANDOFF.md` before making changes.
-

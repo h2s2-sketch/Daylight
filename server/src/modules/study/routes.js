@@ -4,7 +4,7 @@ import { applyReview, previewIntervals } from "./sm2.js";
 import { buildQueue, getQueueCounts } from "./queue.js";
 import { getStreak, getSlipStatus, getWeekActivity } from "./streak.js";
 import { getDb } from "../../db/connection.js";
-import { getAllSettings, setSetting } from "../../services/settings.js";
+import { getAllSettings, setSetting, validSidebarStyle } from "../../services/settings.js";
 import { runTask } from "../../shared/ai.js";
 import { getCached, putCache } from "./ai.repo.js";
 import { getHangulProgress, syncCoreUnlocks } from "../hangul/progress.js";
@@ -180,7 +180,10 @@ router.get("/settings", (req, res) => {
 });
 
 router.patch("/settings", (req, res) => {
-  const allowed = ["study_new_en_daily", "study_new_kr_daily", "study_notify_time"];
+  if (req.body.sidebar_style !== undefined && !validSidebarStyle(req.body.sidebar_style)) {
+    return res.status(400).json({ error: "Invalid sidebar style." });
+  }
+  const allowed = ["study_new_en_daily", "study_new_kr_daily", "study_notify_time", "sidebar_style"];
   for (const [key, value] of Object.entries(req.body)) {
     if (allowed.includes(key)) setSetting(key, value);
   }

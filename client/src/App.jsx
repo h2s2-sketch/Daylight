@@ -17,10 +17,11 @@ import LoginScreen from "./shell/LoginScreen.jsx";
 const THEME_KEY = "daylight-theme";
 
 export default function App() {
+  const marketingSection = new URLSearchParams(window.location.search).get("marketing");
   const [theme, setTheme] = useState(() => {
     try { return localStorage.getItem(THEME_KEY) || "light"; } catch { return "light"; }
   });
-  const [section, setSection] = useState("today");
+  const [section, setSection] = useState(marketingSection === "study" ? "study" : "today");
   const [studyScreen, setStudyScreen] = useState("dashboard");
   const [queue, setQueue] = useState([]);
   const [tally, setTally] = useState(null);
@@ -40,6 +41,11 @@ export default function App() {
       ?.setAttribute("content", theme === "dark" ? "#181821" : "#F8F7F3");
     try { localStorage.setItem(THEME_KEY, theme); } catch {}
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("marketing-capture", Boolean(marketingSection));
+    return () => document.documentElement.classList.remove("marketing-capture");
+  }, [marketingSection]);
 
   const rememberDashboard = useCallback((data) => setStreak(data?.streak?.current ?? 0), []);
 
@@ -93,7 +99,7 @@ export default function App() {
             onStart={startReview}
             onHangul={() => setStudyScreen("hangul-drill")}
             onOpenStudy={() => navigate("study")}
-            onOpenProjects={() => navigate("projects")}
+            onOpenProjects={() => navigate("tasks")}
             onData={rememberDashboard}
           />
         )}

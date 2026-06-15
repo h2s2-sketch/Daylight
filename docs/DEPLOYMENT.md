@@ -64,4 +64,3 @@ Do not start nginx on ports 80 or 443 while Caddy owns those ports.
 If a deployment fails, keep the database untouched, inspect the logs, and return the code to a previously verified commit. Rebuild the frontend and restart the service. Do not use destructive Git commands when the working tree contains unknown changes.
 
 See `DATABASE.md` for backup details and `TROUBLESHOOTING.md` for common failures.
-

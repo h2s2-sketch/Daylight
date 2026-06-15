@@ -104,3 +104,27 @@ export const Edit2 = (p) => (
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </S>
 );
+
+export const Clock = (p) => (
+  <S {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></S>
+);
+
+export const AlertTriangle = (p) => (
+  <S {...p}><path d="M10.3 3.7 2.5 17.2A2 2 0 0 0 4.2 20h15.6a2 2 0 0 0 1.7-2.8L13.7 3.7a2 2 0 0 0-3.4 0z" /><path d="M12 9v4M12 17h.01" /></S>
+);
+
+export const Calendar = (p) => (
+  <S {...p}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></S>
+);
+
+export const Layers = (p) => (
+  <S {...p}><path d="m12 2 9 5-9 5-9-5z" /><path d="m3 12 9 5 9-5M3 17l9 5 9-5" /></S>
+);
+
+export const Briefcase = (p) => (
+  <S {...p}><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18" /></S>
+);
+
+export const Leaf = (p) => (
+  <S {...p}><path d="M20 4c-8 0-14 4-14 10a5 5 0 0 0 5 5c6 0 9-7 9-15z" /><path d="M4 21c2-5 6-8 12-11" /></S>
+);

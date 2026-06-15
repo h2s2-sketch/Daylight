@@ -11,6 +11,8 @@ const NAV = [
 ];
 
 const PHOTO_KEY = "daylight-sidebar-photo";
+const STYLE_KEY = "daylight-sidebar-style";
+const SIDEBAR_STYLES = new Set(["personal_photo", "minimal_gradient", "focus_mode"]);
 
 function cachedPhoto() {
   try {
@@ -24,6 +26,19 @@ function rememberPhoto(url) {
   try {
     localStorage.setItem(PHOTO_KEY, url);
   } catch {}
+}
+
+function cachedStyle() {
+  try {
+    const value = localStorage.getItem(STYLE_KEY);
+    return SIDEBAR_STYLES.has(value) ? value : "personal_photo";
+  } catch {
+    return "personal_photo";
+  }
+}
+
+function rememberStyle(value) {
+  try { localStorage.setItem(STYLE_KEY, value); } catch {}
 }
 
 function Navigation({ active, onNavigate, mobile = false }) {
@@ -47,13 +62,17 @@ function Navigation({ active, onNavigate, mobile = false }) {
 export default function DaylightShell({ active, streak = 0, onNavigate, children }) {
   const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   const [photoUrl, setPhotoUrl] = useState(cachedPhoto);
+  const [sidebarStyle, setSidebarStyle] = useState(cachedStyle);
   const [desktopPhoto, setDesktopPhoto] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
 
   useEffect(() => {
     api.getSettings().then((settings) => {
       const url = settings.sidebar_photo_url || "";
+      const style = SIDEBAR_STYLES.has(settings.sidebar_style) ? settings.sidebar_style : "personal_photo";
       setPhotoUrl(url);
+      setSidebarStyle(style);
       rememberPhoto(url);
+      rememberStyle(style);
     }).catch(() => {});
     const update = (event) => {
       const url = event.detail || "";
@@ -61,7 +80,16 @@ export default function DaylightShell({ active, streak = 0, onNavigate, children
       rememberPhoto(url);
     };
     window.addEventListener("daylight-photo", update);
-    return () => window.removeEventListener("daylight-photo", update);
+    const updateStyle = (event) => {
+      const style = SIDEBAR_STYLES.has(event.detail) ? event.detail : "personal_photo";
+      setSidebarStyle(style);
+      rememberStyle(style);
+    };
+    window.addEventListener("daylight-sidebar-style", updateStyle);
+    return () => {
+      window.removeEventListener("daylight-photo", update);
+      window.removeEventListener("daylight-sidebar-style", updateStyle);
+    };
   }, []);
 
   useEffect(() => {
@@ -72,12 +100,12 @@ export default function DaylightShell({ active, streak = 0, onNavigate, children
   }, []);
 
   return (
-    <div className="daylight-shell">
+    <div className={`daylight-shell sidebar-style-${sidebarStyle}`}>
       <aside
         className="daylight-photo-panel"
-        style={desktopPhoto
+        style={desktopPhoto && sidebarStyle === "personal_photo"
           ? { backgroundImage: photoUrl === null ? "none" : photoUrl ? `url(${photoUrl})` : undefined }
-          : undefined}
+          : { backgroundImage: "none" }}
       >
         <div className="daylight-photo-shade" />
         <div className="daylight-brand">
@@ -107,4 +135,3 @@ export default function DaylightShell({ active, streak = 0, onNavigate, children
     </div>
   );
 }
-

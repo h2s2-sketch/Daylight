@@ -54,6 +54,25 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     setSettings(updated);
   }
 
+  async function saveSidebarStyle(value) {
+    if (!settings || settings.sidebar_style === value || busy) return;
+    const previous = settings.sidebar_style || "personal_photo";
+    setBusy("sidebar-style");
+    setMessage("");
+    setSettings((current) => ({ ...current, sidebar_style: value }));
+    window.dispatchEvent(new CustomEvent("daylight-sidebar-style", { detail: value }));
+    try {
+      const updated = await api.patchSettings({ sidebar_style: value });
+      setSettings(updated);
+    } catch {
+      setSettings((current) => ({ ...current, sidebar_style: previous }));
+      window.dispatchEvent(new CustomEvent("daylight-sidebar-style", { detail: previous }));
+      setMessage("Could not save sidebar style. Please try again.");
+    } finally {
+      setBusy("");
+    }
+  }
+
   async function exportData() {
     setBusy("export");
     setMessage("");
@@ -180,6 +199,30 @@ export default function SettingsPage({ theme, onToggleTheme }) {
       <section className="settings-section">
         <div className="settings-heading">Appearance</div>
         <div className="settings-stack">
+          <div className="settings-sidebar-style">
+            <div className="settings-label">Sidebar style</div>
+            <div className="settings-description">Choose how the desktop sidebar appears. Your choice is saved for every device.</div>
+            <div className="sidebar-style-options">
+              {[
+                ["personal_photo", "Personal Photo", "Use your current image-based sidebar."],
+                ["minimal_gradient", "Minimal Gradient", "A cleaner sidebar without the photo."],
+                ["focus_mode", "Focus Mode", "A plain low-distraction view for work or screen sharing."],
+              ].map(([value, label, description]) => (
+                <button
+                  key={value}
+                  className={`sidebar-style-option ${value}${(settings?.sidebar_style || "personal_photo") === value ? " active" : ""}`}
+                  disabled={!settings || Boolean(busy)}
+                  onClick={() => saveSidebarStyle(value)}
+                  aria-pressed={(settings?.sidebar_style || "personal_photo") === value}
+                >
+                  <span className="sidebar-style-preview"><i /><i /><i /></span>
+                  <strong>{label}</strong>
+                  <small>{description}</small>
+                  <span className="sidebar-style-check">{(settings?.sidebar_style || "personal_photo") === value ? "Selected" : "Select"}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="settings-row photo-setting-row">
             <div className="sidebar-photo-preview" style={settings?.sidebar_photo_url ? { backgroundImage: `url(${settings.sidebar_photo_url})` } : undefined} />
             <div className="photo-setting-copy">

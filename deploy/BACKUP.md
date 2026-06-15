@@ -31,4 +31,3 @@ ls -lh /var/www/lumi/data/backups
 Do not overwrite a live SQLite database while Daylight is running. Stop the app, preserve the current database, restore a verified backup, check ownership, then start the app and test `/api/health`.
 
 See `../docs/DATABASE.md` for data handling and `../docs/DEPLOYMENT.md` for VPS operations.
-

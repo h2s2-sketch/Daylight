@@ -69,4 +69,3 @@ ls -lh /var/www/lumi/data/backups
 ```
 
 Confirm the repository path in the systemd service matches the real VPS path.
-

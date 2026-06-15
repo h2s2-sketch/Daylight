@@ -17,6 +17,12 @@ Last reviewed: 2026-06-15.
 
 ## Recently completed
 
+- Daylight v0.2 task model with Work/Life areas, optional task date/time, and Inbox/Next/Waiting/Done statuses
+- Today task sections for Overdue, Timed, and Anytime, plus area filters across Today, Tasks, and Projects
+- Project goals, Active/Paused/Done status, open-task counts, and next-action summaries
+- Lightweight Daylight design system with progressive Quick Capture, shared task rows, responsive task pages, and Work/Life project groups
+- Persistent sidebar display modes: Personal Photo, Minimal Gradient, and low-distraction Focus Mode
+- JSON export format v2 with backward-compatible v1 import
 - Daylight workspace with Today, Tasks, Projects, Study, and Settings
 - English and Korean SRS flows, Hangul drills, and Korean core deck
 - PWA install support and offline status UI
@@ -36,9 +42,8 @@ Last reviewed: 2026-06-15.
 
 ## Recommended next work
 
-1. Confirm and document the live VPS service unit, Caddy file path, and backup timer status.
-2. Test a complete database backup and restore procedure using a disposable copy.
-3. Continue product work only after choosing the next priority: Tasks/Projects polish, mobile PWA testing, or Korean learning improvements.
+1. Back up `data/app.db`, deploy v0.2 to the VPS, and verify the task migration with live data.
+2. Test Today, Tasks, and Projects on a narrow mobile viewport and refine any crowded controls.
+3. Confirm and document the live VPS service unit, Caddy file path, and backup timer status.
 
 Read `AGENTS.md` before implementation and use the guides under `docs/` for operational work.
-

@@ -1,5 +1,11 @@
 import { getDb } from "../db/connection.js";
 
+export const SIDEBAR_STYLES = new Set(["personal_photo", "minimal_gradient", "focus_mode"]);
+
+export function validSidebarStyle(value) {
+  return SIDEBAR_STYLES.has(value);
+}
+
 export function getSetting(key, fallback = null) {
   const row = getDb().prepare("SELECT value FROM settings WHERE key = ?").get(key);
   return row ? row.value : fallback;

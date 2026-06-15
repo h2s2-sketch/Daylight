@@ -1,79 +1,70 @@
 import { useEffect, useState } from "react";
 import { api } from "../../shared/api.js";
-import { Plus } from "../../shared/icons.jsx";
+import { AlertTriangle, Calendar, Clock, Sun } from "../../shared/icons.jsx";
+import AreaFilters from "./AreaFilters.jsx";
+import TaskQuickCapture from "./TaskQuickCapture.jsx";
+import TaskRow from "./TaskRow.jsx";
+import { localISODate, taskDate } from "./taskUtils.js";
 
-function dateGroup(task, today) {
+const CATEGORIES = [["all", "All"], ["inbox", "Inbox"], ["today", "Today"], ["upcoming", "Upcoming"], ["overdue", "Overdue"], ["waiting", "Waiting"], ["done", "Done"]];
+
+function taskGroup(task, today) {
   if (task.status === "done") return "done";
-  if (task.due_date && task.due_date < today) return "overdue";
-  if (task.due_date === today) return "today";
+  if (task.status === "waiting") return "waiting";
+  if (!taskDate(task)) return "inbox";
+  if (taskDate(task) < today) return "overdue";
+  if (taskDate(task) === today) return "today";
   return "upcoming";
 }
 
+const GROUPS = [
+  ["overdue", "Overdue", AlertTriangle], ["today", "Today", Sun], ["upcoming", "Upcoming", Calendar],
+  ["waiting", "Waiting", Clock], ["inbox", "Inbox", null], ["done", "Done", null],
+];
+
 export default function TasksPage() {
+  const today = localISODate();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [title, setTitle] = useState("");
-  const [projectId, setProjectId] = useState("");
+  const [area, setArea] = useState("");
+  const [category, setCategory] = useState("all");
   const [error, setError] = useState("");
-  const today = new Date().toISOString().slice(0, 10);
 
-  async function load() {
+  async function loadTasks(selectedArea = area, selectedCategory = category) {
     try {
-      const [nextTasks, nextProjects] = await Promise.all([api.getTasks(), api.getProjects()]);
-      setTasks(nextTasks); setProjects(nextProjects); setError("");
+      setTasks(await api.getTasks({ ...(selectedArea ? { area: selectedArea } : {}), ...(selectedCategory !== "all" ? { category: selectedCategory } : {}), date: today }));
+      setError("");
     } catch (err) { setError(err.message); }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { api.getProjects().then(setProjects).catch((err) => setError(err.message)); }, []);
+  useEffect(() => { loadTasks(area, category); }, [area, category]);
 
-  async function addTask(event) {
-    event.preventDefault();
-    const value = title.trim();
-    if (!value) return;
-    await api.createTask({ title: value, project_id: projectId || null });
-    setTitle(""); await load();
-  }
-  async function toggle(task) {
-    await api.updateTask(task.id, { status: task.status === "done" ? "todo" : "done" });
-    await load();
-  }
-
-  const filtered = filter === "all" ? tasks : tasks.filter((task) => String(task.project_id || "inbox") === filter);
-  const groups = [
-    { id: "overdue", label: "Overdue", note: "Needs attention" },
-    { id: "today", label: "Today", note: "Current focus" },
-    { id: "upcoming", label: "Upcoming", note: "Later or unscheduled" },
-    { id: "done", label: "Completed", note: "Finished tasks" },
-  ];
+  async function addTask(task) { await api.createTask(task); await loadTasks(); }
+  async function updateTask(id, updates) { try { await api.updateTask(id, updates); await loadTasks(); } catch (err) { setError(err.message); } }
+  function toggleTask(task) { return updateTask(task.id, { status: task.status === "done" ? "inbox" : "done" }); }
 
   return (
-    <div className="daylight-page fade-enter">
-      <div className="page-heading"><div><h1>Tasks</h1><p>Across every project</p></div></div>
-      <form className="prototype-quick-add task-quick-add" onSubmit={addTask}>
-        <Plus size={17} /><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Add a task..." />
-        <select value={projectId} onChange={(event) => setProjectId(event.target.value)} aria-label="Project"><option value="">Inbox</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</select>
-        <button>Add</button>
-      </form>
-      <div className="prototype-filters">
-        <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
-        <button className={filter === "inbox" ? "active" : ""} onClick={() => setFilter("inbox")}>Inbox</button>
-        {projects.map((project) => <button key={project.id} className={filter === String(project.id) ? "active" : ""} onClick={() => setFilter(String(project.id))}>{project.title}</button>)}
+    <div className="daylight-page ds-page fade-enter">
+      <div className="ds-page-heading"><h1>Tasks</h1><p>{tasks.filter((task) => task.status !== "done").length} open across every area</p></div>
+      <TaskQuickCapture projects={projects} onCreate={addTask} />
+      <div className="ds-task-toolbar">
+        <div className="ds-segmented">{CATEGORIES.map(([value, label]) => <button key={value} className={category === value ? "on" : ""} onClick={() => setCategory(value)}>{label}</button>)}</div>
+        <AreaFilters value={area} onChange={setArea} />
       </div>
       {error && <div className="daylight-card error-card">{error}</div>}
-      {!error && !filtered.length && <div className="daylight-card empty-state">No tasks here yet.</div>}
-      {groups.map((group) => {
-        const list = filtered.filter((task) => dateGroup(task, today) === group.id);
-        if (!list.length) return null;
-        return <section className="task-group" key={group.id}>
-          <div className="section-heading"><div><span className="section-kicker">{group.label}</span><p>{group.note}</p></div></div>
-          <div className="prototype-task-list">{list.map((task) => (
-            <button key={task.id} className={`prototype-task${task.status === "done" ? " done" : ""}`} onClick={() => toggle(task)}>
-              <span className="prototype-check">{task.status === "done" ? "✓" : ""}</span><span className={`priority-dot ${task.priority}`} />
-              <span className="prototype-task-title">{task.title}</span><span className="prototype-tag">{task.project_title || "Inbox"}</span>
-            </button>
-          ))}</div>
-        </section>;
-      })}
+      {!error && !tasks.length && <div className="ds-empty"><strong>No tasks here yet</strong><span>Capture a task above or choose another filter.</span></div>}
+      <div className="ds-section-stack">
+        {GROUPS.map(([id, label, Icon]) => {
+          const list = tasks.filter((task) => taskGroup(task, today) === id);
+          if (!list.length) return null;
+          return (
+            <section className={`ds-task-section${id === "overdue" ? " danger" : ""}`} key={id}>
+              <div className="ds-section-head"><span className="ds-section-label">{Icon && <Icon size={16} />}{label}</span><span className="ds-section-meta">{list.length} {list.length === 1 ? "task" : "tasks"}</span></div>
+              <div className="ds-task-list">{list.map((task) => <TaskRow key={task.id} task={task} today={today} projects={projects} editable onToggle={toggleTask} onUpdate={updateTask} />)}</div>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }

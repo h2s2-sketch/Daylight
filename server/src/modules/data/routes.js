@@ -4,14 +4,54 @@ import { createDatabaseBackup } from "../../services/backup.js";
 
 const router = Router();
 const TABLES = ["settings", "study_cards", "study_reviews", "study_ai_cache", "task_projects", "task_items"];
+const VALID_AREAS = new Set(["work", "life"]);
+
+function validDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+  if (!match) return false;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.getUTCFullYear() === Number(match[1]) && date.getUTCMonth() === Number(match[2]) - 1 && date.getUTCDate() === Number(match[3]);
+}
+
+function validTime(value) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value || ""));
+}
+
+function exportRows(table, rows) {
+  if (table !== "task_items") return rows;
+  return rows.map((row) => ({ ...row, date: row.due_date, time: row.due_time }));
+}
+
+export function normalizeImportRow(table, source) {
+  const row = { ...source };
+  if (table === "task_items") {
+    if (row.due_date === undefined && row.date !== undefined) row.due_date = row.date;
+    if (row.due_time === undefined && row.time !== undefined) row.due_time = row.time;
+    delete row.date;
+    delete row.time;
+    if (!VALID_AREAS.has(row.area)) row.area = null;
+    if (row.due_date != null && !validDate(row.due_date)) row.due_date = null;
+    if (row.due_time != null && !validTime(row.due_time)) row.due_time = null;
+    if (!row.due_date) row.due_time = null;
+    if (row.status === "todo") row.status = "inbox";
+    if (row.status === "doing") row.status = "next";
+    if (!["inbox", "next", "waiting", "done"].includes(row.status)) row.status = "inbox";
+  }
+  if (table === "task_projects") {
+    if (!VALID_AREAS.has(row.area)) row.area = null;
+    if (row.status === "archived") row.status = "paused";
+    if (!["active", "paused", "done"].includes(row.status)) row.status = "active";
+  }
+  return row;
+}
 
 function exportPayload() {
   const db = getDb();
   return {
     format: "daylight-data",
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
-    tables: Object.fromEntries(TABLES.map((table) => [table, db.prepare(`SELECT * FROM ${table}`).all()])),
+    tables: Object.fromEntries(TABLES.map((table) => [table, exportRows(table, db.prepare(`SELECT * FROM ${table}`).all())])),
   };
 }
 
@@ -28,7 +68,7 @@ router.post("/backup", async (_req, res, next) => {
 router.post("/import", async (req, res, next) => {
   try {
     const payload = req.body;
-    if (payload?.format !== "daylight-data" || payload?.version !== 1 || !payload.tables) {
+    if (payload?.format !== "daylight-data" || ![1, 2].includes(payload?.version) || !payload.tables) {
       return res.status(400).json({ error: "Invalid Daylight backup file" });
     }
     for (const table of TABLES) {
@@ -44,7 +84,8 @@ router.post("/import", async (req, res, next) => {
       for (const table of TABLES) {
         const rows = payload.tables[table] || [];
         const allowed = new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((column) => column.name));
-        for (const row of rows) {
+        for (const source of rows) {
+          const row = normalizeImportRow(table, source);
           const columns = Object.keys(row).filter((key) => allowed.has(key));
           if (!columns.length) continue;
           const placeholders = columns.map(() => "?").join(", ");
