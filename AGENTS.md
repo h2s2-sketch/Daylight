@@ -1,164 +1,67 @@
 # AGENTS.md
 
-Project instructions for any coding agent working on this repository.
+Instructions for Codex, Claude Code, and other coding assistants working on Daylight.
 
-## What this app is
+## Read before changing anything
 
-**Lumi Study App** is a personal spaced-repetition study app for learning
-English and Korean. It schedules vocabulary/phrase cards using the SM-2
-algorithm, presents a daily "Today" dashboard with per-language queues and
-streak tracking, supports an AI-powered quick-add flow that fills in a
-card's definition, translation, IPA, part of speech, CEFR level, tags, and
-example sentences in the background, includes a guided Hangul drill course
-for Korean beginners, and is installable as a PWA. It is mobile-first
-(single column, ≤640px) and matches the visual style of the Lumi design
-reference exactly.
+1. Read `README.md` and this file.
+2. Read `HANDOFF.md` for the current state and pending work.
+3. Read the relevant guide in `docs/` for architecture, deployment, database, or troubleshooting work.
+4. Inspect the current code and Git state. Do not assume an old handoff or local remote-tracking ref is current.
 
-## Tech stack
+## Repository state
 
-- **Frontend**: React 18 + Vite, mobile-first single-column. Inline styles
-  driven by CSS custom properties (design tokens).
-- **Backend**: Node.js + Express (ESM, `"type": "module"`), `/api/study/*`
-  and `/api/hangul/*` routers.
-- **Database**: SQLite via `better-sqlite3`, WAL mode, foreign keys ON.
-  Namespaced tables (`study_*`, `hangul_*`). DB lives at `server/data/app.db`.
-- **AI**: Anthropic API / Claude Agent SDK, accessed only through
-  `server/src/shared/ai.js`. Default mode is `mock` (no credentials needed).
-- **PWA**: Web App Manifest + vanilla service worker (`client/public/sw.js`).
-  Service worker caches the app shell; `/api/` routes always bypass the cache.
+- Stable and default branch: `claude/brave-maxwell-66aq36`
+- There is currently no `main` branch.
+- `codex/korean-phase-2` and `codex/pwa-mobile-experience` were merged through PR #1 and PR #2. Do not delete, rename, or reuse branches without explicit approval.
+- Never change the default branch unless explicitly requested.
 
-## Repo structure
+## Architecture rules
 
-```
-package.json              — npm workspaces root (server, client)
-README.md                 — quick start + feature list
-AGENTS.md                 — this file
-HANDOFF.md                — current state, decisions, what remains
+- Frontend: React 18 and Vite under `client/`.
+- Backend: Express ESM under `server/`; production serves `client/dist` and the API from one process.
+- Database: SQLite at `data/app.db`, with WAL and foreign keys enabled.
+- API namespaces include `/api/study/*`, `/api/study/hangul/*`, `/api/tasks/*`, `/api/data/*`, `/api/appearance/*`, and `/api/auth/*`.
+- Domain code belongs in a feature module. Shared infrastructure belongs in `services/` or `shared/`.
+- Database migrations must be idempotent. Use `CREATE TABLE IF NOT EXISTS` and guard column changes.
 
-server/
-  .env.example            — PORT, CLIENT_ORIGIN, AI_MODE, ANTHROPIC_API_KEY
-  src/
-    index.js              — Express app entry; mounts study + hangul routers
-    db/
-      connection.js       — SQLite connection, WAL, runs migrations
-      migrate.js          — schema (idempotent / guarded migrations)
-    services/
-      settings.js         — shared key/value settings store
-    shared/
-      ai.js               — AI client: mock | api_key | agent_sdk modes
-    modules/
-      study/
-        sm2.js            — pure SM-2 functions
-        cards.repo.js     — card CRUD
-        ai.repo.js        — AI response cache get/put
-        queue.js          — daily queue builder + counts
-        streak.js         — streak, slip status, week activity
-        routes.js         — /api/study/* Express router
-      hangul/
-        data.js           — Hangul character/syllable core deck data
-        progress.js       — drill progress tracking helpers
-        routes.js         — /api/hangul/* Express router
-        hangul.test.js    — unit tests
+## AI and study rules
 
-client/
-  public/
-    manifest.webmanifest  — PWA manifest
-    sw.js                 — service worker (app shell cache)
-    icons/                — lumi.svg, lumi-192.png, lumi-512.png
-  src/
-    styles/tokens.css     — design tokens (light + dark) + base styles
-    shared/               — api.js (fetch client), tts.js, icons.jsx
-    shell/
-      NavBar.jsx          — Study / Settings tabs (extensible)
-      AppStatus.jsx       — offline banner + PWA install prompt card
-    modules/study/
-      Dashboard.jsx       — Today screen, AI quick-add, Hangul progress card
-      Review.jsx          — full-screen review with SM-2 grade bar
-      Summary.jsx         — post-session stats
-      AddCard.jsx         — manual card form
-      Cards.jsx           — card library (edit/delete, pending spinner, retry)
-      HangulDrill.jsx     — Hangul recognition drill UI
-      SettingsPage.jsx    — daily limits, dark mode
-```
+- All AI provider calls go through `server/src/shared/ai.js`.
+- Current task names are `autofill_en` and `autofill_kr`; do not hard-code provider calls in routes or React components.
+- Cache AI responses through the existing study cache.
+- Korean vocabulary and quick-add remain gated by Hangul foundation progress unless the product requirement explicitly changes.
+- Preserve the existing SM-2 behavior and add focused tests when changing scheduling or queue logic.
 
-## How to run
+## Frontend and PWA rules
 
-This is an npm workspaces monorepo. Install dependencies first:
+- Reuse design tokens from `client/src/styles/tokens.css` instead of adding isolated colors and spacing.
+- Keep desktop and mobile behavior working; respect safe-area insets and reduced-motion preferences.
+- The service worker cache is currently `daylight-assets-v3`.
+- The service worker precaches the manifest and icons. Other same-origin static assets are cached after use; API requests always use the network.
+- When changing cached PWA behavior, bump the cache key and test update behavior so stale CSS or JavaScript is not retained.
 
-```bash
-npm install --prefix server
-npm install --prefix client
-```
+## Data and security rules
 
-Run dev (two terminals):
+- Never commit `.env`, credentials, `data/app.db`, WAL/SHM files, uploads, or backups.
+- Back up SQLite before migrations or deployment work.
+- Keep authentication enabled for the public VPS deployment.
+- Do not expose secrets in logs, docs, screenshots, commits, or test fixtures.
 
-```bash
-# Terminal 1 — API on :3001
-npm run dev:server
+## Validation
 
-# Terminal 2 — Vite on :5173, proxies /api → :3001
-npm run dev:client
-```
-
-Open `http://localhost:5173`.
-
-Run tests:
+Run the checks relevant to the change. For normal code or configuration changes, use:
 
 ```bash
 npm test --workspace=server
+npm run build
 ```
 
-> **Note on Claude Code:** `.claude/hooks/session-start.sh` is
-> Claude-Code-on-the-web specific — it runs the two `npm install` commands
-> automatically when a fresh web session starts. **Other coding agents
-> should ignore that hook and just run the `npm install` commands above
-> themselves.**
+For documentation-only work, also verify commands, links, paths, environment names, and statements against the current code.
 
-## Key conventions
+## Editing discipline
 
-- **Feature modules**: study logic lives under `modules/study/`, Hangul logic
-  under `modules/hangul/`. New domains get their own module folder following
-  the same `*.repo.js` / `routes.js` shape. Keep cross-cutting helpers in
-  `services/` or `shared/`.
+- Keep changes scoped and preserve unrelated user work.
+- Do not rewrite Git history, force-push, delete branches, or change the default branch without explicit approval.
+- Update `HANDOFF.md` when completed work materially changes the current state or next recommended task.
 
-- **Namespaced tables**: every table this app owns is prefixed with its module
-  name (`study_*`, `hangul_*`). Shared infrastructure (e.g. `settings`) is
-  unprefixed. Migrations in `db/migrate.js` must be idempotent — guard
-  `ALTER TABLE` with a `PRAGMA table_info` check, use
-  `CREATE TABLE IF NOT EXISTS`.
-
-- **All AI calls go through `shared/ai.js`**: never call the Anthropic API
-  or Agent SDK directly from a route or component. Add new AI tasks to the
-  `MODELS` map and the `runTask(taskName, input)` switch. This keeps mode
-  selection (`mock` / `api_key` / `agent_sdk`) and model config in one place.
-  Cache responses via `ai.repo.js`.
-
-- **Match the design reference**: use the existing tokens in
-  `client/src/styles/tokens.css` (oklch accent colors `--en` / `--kr`,
-  warm-neutral palette, Figtree + Noto Sans KR/TC fonts, radii like
-  `--r-md`). Don't introduce new hard-coded colors or spacing — extend the
-  token set if needed and keep both light and dark variants in sync.
-
-- **Hangul gating**: Korean vocabulary review and Korean quick-add are gated
-  behind `hangul.foundation.complete`. Check this flag (returned by
-  `GET /api/study/dashboard` in the `hangul` field) before enabling Korean
-  features in the UI. Do not remove this gate without explicit instruction.
-
-- **Mobile-first**: single column, max width `--maxw` (640px). Respect
-  safe-area insets (`env(safe-area-inset-top/bottom)`) and
-  `prefers-reduced-motion`. PWA `display-mode: standalone` removes the
-  desktop padding — the `main.jsx` media query handles this.
-
-- **Service worker cache key**: the SW cache is named `lumi-shell-v1`.
-  If you add files to the app shell, update the `APP_SHELL` array in
-  `client/public/sw.js` AND bump the cache version string so old caches
-  are evicted on next activation.
-
-## Source of truth
-
-`language-study-app-spec.md` is the authoritative product/engineering spec.
-When the spec and code disagree, follow the spec and flag the discrepancy.
-See `HANDOFF.md` for what's built versus what remains.
-
-> Note: the spec file was provided as an upload and is not yet committed
-> to the repo. Add it to the repo root so future agents have it inline.
