@@ -39,8 +39,47 @@ export const FOCUS_STATUS_LABELS = {
 
 export const MAX_FOCUS_PER_WEEK = 3;
 
+// Cool, calm category hues from the Final UI Direction. Shown as a dot or a
+// 3px bar, never as a fill. Drive via inline style: style={{ "--cat": color }}.
+export const CATEGORY_COLORS = {
+  eng_planning: "#4B5B9E",
+  ai_daylight: "#7E5AAE",
+  work_english: "#3F6FA6",
+  fitness: "#C25A6B",
+  korean: "#3E8E6E",
+  finance: "#A98A3C",
+  portfolio: "#A65592",
+};
+
 function pad(n) {
   return n < 10 ? `0${n}` : `${n}`;
+}
+
+// Time-aware greeting, keyed off local time.
+export function greeting(date = new Date()) {
+  const h = date.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+// "16–22 June" / "29 June – 5 July" range for a week_start (Monday).
+export function weekRangeLabel(weekStart) {
+  const end = addDays(weekStart, 6);
+  const [, sm, sd] = weekStart.split("-").map(Number);
+  const [, em, ed] = end.split("-").map(Number);
+  const monthName = (m) => new Date(2000, m - 1, 1).toLocaleDateString("en-US", { month: "long" });
+  if (sm === em) return `${sd}–${ed} ${monthName(sm)}`;
+  return `${sd} ${monthName(sm)} – ${ed} ${monthName(em)}`;
+}
+
+// The weekend review nudge: current week, unreviewed, and it's Fri/Sat/Sun.
+export function shouldShowReviewBanner(weekStart, hasReview, today = localISODate()) {
+  if (hasReview) return false;
+  if (weekStart !== isoWeekStart(today)) return false;
+  const [y, m, d] = today.split("-").map(Number);
+  const day = new Date(y, m - 1, d).getDay(); // 0=Sun..6=Sat
+  return day === 5 || day === 6 || day === 0;
 }
 
 // Local-date ISO string, matching the convention used by taskUtils.localISODate.

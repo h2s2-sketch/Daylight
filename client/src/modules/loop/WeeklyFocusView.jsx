@@ -1,34 +1,43 @@
 import { useEffect, useState } from "react";
 import { api } from "../../shared/api.js";
-import { Plus, Trash } from "../../shared/icons.jsx";
+import { Check, Plus, Trash } from "../../shared/icons.jsx";
 import WeekNav from "./WeekNav.jsx";
 import {
-  CATEGORY_LABELS, FOCUS_STATUSES, FOCUS_STATUS_LABELS, MAX_FOCUS_PER_WEEK, isoWeekStart,
+  CATEGORY_COLORS, CATEGORY_LABELS, FOCUS_STATUSES, FOCUS_STATUS_LABELS,
+  MAX_FOCUS_PER_WEEK, isoWeekStart,
 } from "./loopUtils.js";
 
-function FocusRow({ item, goals, onUpdate, onDelete }) {
+function FocusSlot({ item, goals, onUpdate, onDelete }) {
   const [title, setTitle] = useState(item.title);
+  const color = CATEGORY_COLORS[item.goal_category];
   return (
-    <div className="ds-task">
-      <input
-        className="ds-loop-input"
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        onBlur={() => title.trim() && title !== item.title && onUpdate(item.id, { title: title.trim() })}
-      />
-      <select
-        value={item.goal_id || ""}
-        onChange={(event) => onUpdate(item.id, { goal_id: event.target.value ? Number(event.target.value) : null })}
-      >
-        <option value="">No goal</option>
-        {goals.map((goal) => (
-          <option key={goal.id} value={goal.id}>{CATEGORY_LABELS[goal.category] || goal.category}</option>
-        ))}
-      </select>
-      <select value={item.status} onChange={(event) => onUpdate(item.id, { status: event.target.value })}>
-        {FOCUS_STATUSES.map((status) => <option key={status} value={status}>{FOCUS_STATUS_LABELS[status]}</option>)}
-      </select>
-      <button className="ds-text-link" onClick={() => onDelete(item.id)} aria-label="Delete focus item"><Trash size={15} /></button>
+    <div className="loop-slot">
+      <span className="six">{String(item.sort_order).padStart(2, "0")}</span>
+      <div className="bd">
+        <input
+          className="loop-input"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          onBlur={() => title.trim() && title !== item.title && onUpdate(item.id, { title: title.trim() })}
+        />
+        <div className="sln">
+          <span className="loop-dot" style={{ "--cat": color }} />
+          <select
+            className="loop-select"
+            value={item.goal_id || ""}
+            onChange={(event) => onUpdate(item.id, { goal_id: event.target.value ? Number(event.target.value) : null })}
+          >
+            <option value="">No goal</option>
+            {goals.map((goal) => (
+              <option key={goal.id} value={goal.id}>{CATEGORY_LABELS[goal.category] || goal.category}</option>
+            ))}
+          </select>
+          <select className="loop-select" value={item.status} onChange={(event) => onUpdate(item.id, { status: event.target.value })}>
+            {FOCUS_STATUSES.map((status) => <option key={status} value={status}>{FOCUS_STATUS_LABELS[status]}</option>)}
+          </select>
+        </div>
+      </div>
+      <button className="loop-iconbtn" onClick={() => onDelete(item.id)} aria-label="Delete focus item"><Trash size={15} /></button>
     </div>
   );
 }
@@ -64,36 +73,32 @@ export default function WeeklyFocusView() {
   const full = items.length >= MAX_FOCUS_PER_WEEK;
 
   return (
-    <div className="daylight-page ds-page fade-enter">
-      <div className="ds-page-heading">
-        <h1>Weekly Focus</h1>
-        <p>Maximum 3. That's the point.</p>
-      </div>
+    <div className="loop-page flat">
+      <header className="loop-head">
+        <div className="loop-meta">Week of</div>
+        <h1 className="loop-greet">This week</h1>
+      </header>
       <WeekNav weekStart={weekStart} onChange={setWeekStart} />
-      {error && <div className="daylight-card error-card">{error}</div>}
-      <section className="ds-task-section">
-        <div className="ds-section-head">
-          <span className="ds-section-label">Focus items</span>
-          <span className="ds-section-meta">{items.length} / 3</span>
-        </div>
-        <div className="ds-task-list">
-          {items.length === 0 && <div className="ds-task"><span className="ds-section-meta">Nothing set for this week.</span></div>}
-          {items.map((item) => (
-            <FocusRow key={item.id} item={item} goals={goals} onUpdate={updateItem} onDelete={deleteItem} />
-          ))}
-        </div>
-      </section>
+      {error && <div className="loop-error">{error}</div>}
+
+      {items.length === 0 && <div className="loop-empty">Nothing set for this week.</div>}
+      {items.map((item) => (
+        <FocusSlot key={item.id} item={item} goals={goals} onUpdate={updateItem} onDelete={deleteItem} />
+      ))}
+
       {full ? (
-        <div className="daylight-card">Three is the cap. That's the point.</div>
+        <div className="loop-capline"><Check size={12} sw={2.4} /> Three is the cap. That's the point.</div>
       ) : (
-        <form className="ds-task" onSubmit={addItem}>
+        <form className="loop-row" onSubmit={addItem} style={{ borderBottom: "none" }}>
           <input
-            className="ds-loop-input"
+            className="loop-input"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Add a focus item (e.g. Fitness 3×)"
           />
-          <button className="ds-primary-button" disabled={!title.trim()}><Plus size={15} /> Add</button>
+          <button className="loop-cta" style={{ width: "auto", marginTop: 0, padding: "12px 16px" }} disabled={!title.trim()}>
+            <Plus size={15} sw={2.2} /> Add focus
+          </button>
         </form>
       )}
     </div>

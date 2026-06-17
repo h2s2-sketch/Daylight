@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
+import { Plus, Trash } from "../../shared/icons.jsx";
 import { api } from "../../shared/api.js";
-import { Plus } from "../../shared/icons.jsx";
-import { CATEGORY_LABELS, CATEGORY_ORDER, GOAL_STATUS_LABELS, GOAL_STATUSES } from "./loopUtils.js";
+import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER, GOAL_STATUS_LABELS, GOAL_STATUSES } from "./loopUtils.js";
 
-function GoalRow({ goal, onUpdate, onDelete }) {
+function GoalCard({ goal, onUpdate, onDelete }) {
   const [title, setTitle] = useState(goal.title);
   return (
-    <div className="ds-task">
+    <div className="loop-gcard">
       <input
-        className="ds-loop-input"
+        className="loop-input"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         onBlur={() => title.trim() && title !== goal.title && onUpdate(goal.id, { title: title.trim() })}
       />
-      <select value={goal.status} onChange={(event) => onUpdate(goal.id, { status: event.target.value })}>
+      <select className="loop-select" value={goal.status} onChange={(event) => onUpdate(goal.id, { status: event.target.value })}>
         {GOAL_STATUSES.map((status) => <option key={status} value={status}>{GOAL_STATUS_LABELS[status]}</option>)}
       </select>
-      <button className="ds-text-link" onClick={() => onDelete(goal.id)}>Delete</button>
+      <button className="loop-iconbtn" onClick={() => onDelete(goal.id)} aria-label="Delete goal"><Trash size={15} /></button>
     </div>
   );
 }
@@ -47,54 +47,54 @@ export default function GoalsView() {
   }
 
   return (
-    <div className="daylight-page ds-page fade-enter">
-      <div className="ds-page-heading">
-        <h1>Goals</h1>
-        <p>One active goal per category</p>
-      </div>
-      {error && <div className="daylight-card error-card">{error}</div>}
-      <div className="ds-section-stack">
-        {CATEGORY_ORDER.map((category) => {
-          const list = goals.filter((goal) => goal.category === category);
-          const hasActive = list.some((goal) => goal.status === "active");
-          return (
-            <section className="ds-task-section" key={category}>
-              <div className="ds-section-head">
-                <span className="ds-section-label">{CATEGORY_LABELS[category]}</span>
-                <button
-                  className="ds-text-link"
-                  onClick={() => { setCreatingFor(creatingFor === category ? null : category); setNewTitle(""); }}
-                >
-                  <Plus size={14} /> Add goal
-                </button>
+    <div className="loop-page flat">
+      <header className="loop-head">
+        <h1 className="loop-greet">Goals</h1>
+        <div className="loop-meta" style={{ margin: "6px 0 0" }}>One active goal per category</div>
+      </header>
+      {error && <div className="loop-error">{error}</div>}
+
+      {CATEGORY_ORDER.map((category) => {
+        const list = goals.filter((goal) => goal.category === category);
+        const hasActive = list.some((goal) => goal.status === "active");
+        return (
+          <div className="loop-ggroup" key={category}>
+            <div className="loop-ggh">
+              <span className="loop-dot" style={{ "--cat": CATEGORY_COLORS[category] }} />
+              <span className="gt">{CATEGORY_LABELS[category]}</span>
+              <button
+                className="loop-back add"
+                onClick={() => { setCreatingFor(creatingFor === category ? null : category); setNewTitle(""); }}
+              ><Plus size={13} /> Add</button>
+            </div>
+
+            {list.map((goal) => (
+              <div key={goal.id} style={{ marginBottom: 8 }}>
+                <GoalCard goal={goal} onUpdate={updateGoal} onDelete={deleteGoal} />
               </div>
-              <div className="ds-task-list">
-                {list.length === 0 && creatingFor !== category && (
-                  <div className="ds-task"><span className="ds-section-meta">No goal yet</span></div>
-                )}
-                {list.map((goal) => (
-                  <GoalRow key={goal.id} goal={goal} onUpdate={updateGoal} onDelete={deleteGoal} />
-                ))}
-                {creatingFor === category && (
-                  <form
-                    className="ds-task"
-                    onSubmit={(event) => { event.preventDefault(); createGoal(category); }}
-                  >
-                    <input
-                      className="ds-loop-input"
-                      autoFocus
-                      value={newTitle}
-                      onChange={(event) => setNewTitle(event.target.value)}
-                      placeholder={hasActive ? "New goal (will need a free category)" : "Short goal title"}
-                    />
-                    <button className="ds-primary-button" disabled={!newTitle.trim()}>Create</button>
-                  </form>
-                )}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+            ))}
+
+            {list.length === 0 && creatingFor !== category && (
+              <button className="loop-gcard empty" onClick={() => { setCreatingFor(category); setNewTitle(""); }}>
+                <Plus size={13} sw={2.2} /> Set a goal
+              </button>
+            )}
+
+            {creatingFor === category && (
+              <form className="loop-gcard" onSubmit={(event) => { event.preventDefault(); createGoal(category); }}>
+                <input
+                  className="loop-input"
+                  autoFocus
+                  value={newTitle}
+                  onChange={(event) => setNewTitle(event.target.value)}
+                  placeholder={hasActive ? "New goal (needs a free category)" : "Short goal title"}
+                />
+                <button className="loop-cta" style={{ width: "auto", marginTop: 0, padding: "9px 14px", fontSize: 13 }} disabled={!newTitle.trim()}>Create</button>
+              </form>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

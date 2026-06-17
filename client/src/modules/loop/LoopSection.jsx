@@ -1,35 +1,54 @@
 import { useState } from "react";
+import "../../styles/loop.css";
 import LoopDashboard from "./LoopDashboard.jsx";
 import GoalsView from "./GoalsView.jsx";
 import WeeklyFocusView from "./WeeklyFocusView.jsx";
 import DailyCheckinView from "./DailyCheckinView.jsx";
 import WeeklyReviewView from "./WeeklyReviewView.jsx";
 
-const VIEWS = [
-  ["dashboard", "Dashboard"],
+const TABS = [
+  ["dashboard", "Loop"],
   ["goals", "Goals"],
-  ["focus", "Weekly Focus"],
+  ["focus", "Focus"],
   ["checkin", "Check-in"],
-  ["review", "Weekly Review"],
+  ["review", "Review"],
 ];
 
 export default function LoopSection() {
   const [view, setView] = useState("dashboard");
+  const [checkinOpen, setCheckinOpen] = useState(false);
+  // Bumped whenever the check-in sheet closes so the dashboard refetches.
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  // Re-mount sub-views on navigation so each fetches fresh data (incl. the
-  // dashboard's derived counters after a check-in or review).
+  function goTo(target) {
+    if (target === "checkin") { setCheckinOpen(true); return; }
+    setView(target);
+  }
+
+  function closeCheckin() {
+    setCheckinOpen(false);
+    setRefreshToken((n) => n + 1);
+  }
+
   return (
-    <div>
-      <div className="ds-segmented ds-loop-nav">
-        {VIEWS.map(([id, label]) => (
-          <button key={id} className={view === id ? "on" : ""} onClick={() => setView(id)}>{label}</button>
-        ))}
+    <div className="loop-theme has-tabs">
+      <nav className="loop-tabs" aria-label="Loop sections">
+        {TABS.map(([id, label]) => {
+          const active = id === "checkin" ? checkinOpen : (!checkinOpen && view === id);
+          return (
+            <button key={id} className={active ? "on" : ""} onClick={() => goTo(id)}>{label}</button>
+          );
+        })}
+      </nav>
+
+      <div className="loop-scroll">
+        {view === "dashboard" && <LoopDashboard key={`dashboard-${refreshToken}`} goTo={goTo} />}
+        {view === "goals" && <GoalsView key="goals" />}
+        {view === "focus" && <WeeklyFocusView key="focus" />}
+        {view === "review" && <WeeklyReviewView key="review" />}
       </div>
-      {view === "dashboard" && <LoopDashboard key="dashboard" goTo={setView} />}
-      {view === "goals" && <GoalsView key="goals" />}
-      {view === "focus" && <WeeklyFocusView key="focus" />}
-      {view === "checkin" && <DailyCheckinView key="checkin" />}
-      {view === "review" && <WeeklyReviewView key="review" />}
+
+      {checkinOpen && <DailyCheckinView onClose={closeCheckin} />}
     </div>
   );
 }

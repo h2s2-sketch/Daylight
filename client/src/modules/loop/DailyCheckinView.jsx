@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../../shared/api.js";
 import { Check } from "../../shared/icons.jsx";
-import { isoWeekStart, localISODate } from "./loopUtils.js";
+import { CATEGORY_COLORS, isoWeekStart, localISODate } from "./loopUtils.js";
 
-export default function DailyCheckinView() {
+export default function DailyCheckinView({ onClose }) {
   const today = localISODate();
   const weekStart = isoWeekStart(today);
   const [focusItems, setFocusItems] = useState([]);
@@ -11,7 +11,6 @@ export default function DailyCheckinView() {
   const [energy, setEnergy] = useState(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -29,72 +28,56 @@ export default function DailyCheckinView() {
   }, [today, weekStart]);
 
   function toggle(id) {
-    setSaved(false);
     setProgressed((current) => current.includes(id) ? current.filter((x) => x !== id) : [...current, id]);
   }
 
   async function save() {
     try {
       await api.putLoopCheckin({ date: today, progressed_focus_ids: progressed, energy, note: note.trim() || null });
-      setSaved(true); setError("");
+      onClose();
     } catch (err) { setError(err.message); }
   }
 
   const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
   return (
-    <div className="daylight-page ds-page fade-enter">
-      <div className="ds-page-heading">
-        <h1>Daily Check-in</h1>
-        <p>{dateLabel}</p>
-      </div>
-      {error && <div className="daylight-card error-card">{error}</div>}
-      <section className="ds-task-section">
-        <div className="ds-section-head"><span className="ds-section-label">Made progress on</span></div>
-        <div className="ds-task-list">
-          {focusItems.length === 0 && (
-            <div className="ds-empty"><strong>No focus items this week</strong><span>Set your weekly focus first.</span></div>
-          )}
-          {focusItems.map((item) => {
-            const on = progressed.includes(item.id);
-            return (
-              <button key={item.id} className="ds-task" onClick={() => toggle(item.id)} style={{ textAlign: "left" }}>
-                <span className="ds-task-title">{item.sort_order}. {item.title}</span>
-                <span className="ds-section-meta">{on ? <Check size={16} /> : "—"}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+    <div className="loop-scrim" onClick={onClose}>
+      <div className="loop-sheet" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+        <div className="loop-grab" />
+        <div className="loop-sheet-title">How did today go?</div>
+        <div className="loop-sheet-date">{dateLabel}</div>
+        {error && <div className="loop-error">{error}</div>}
 
-      <section className="ds-task-section">
-        <div className="ds-section-head"><span className="ds-section-label">Energy · optional</span></div>
-        <div className="ds-loop-energy">
-          {[1, 2, 3, 4, 5].map((value) => (
-            <button
-              key={value}
-              className={energy === value ? "on" : ""}
-              onClick={() => { setSaved(false); setEnergy(energy === value ? null : value); }}
-            >
-              {value}
+        <div className="loop-sl">Made progress on</div>
+        {focusItems.length === 0 && <div className="loop-empty">No focus items this week — set your weekly focus first.</div>}
+        {focusItems.map((item) => {
+          const on = progressed.includes(item.id);
+          return (
+            <button key={item.id} className={`loop-tog${on ? " on" : ""}`} onClick={() => toggle(item.id)}>
+              <span className="ck">{on ? <Check size={13} sw={2.6} /> : null}</span>
+              <span className="loop-bar" style={{ "--cat": CATEGORY_COLORS[item.goal_category], height: 20 }} />
+              <span className="nm">{item.title}</span>
             </button>
+          );
+        })}
+
+        <div className="loop-sl">Energy <span className="opt">· optional</span></div>
+        <div className="loop-energy">
+          {[1, 2, 3, 4, 5].map((value) => (
+            <button key={value} className={energy === value ? "on" : ""} onClick={() => setEnergy(energy === value ? null : value)}>{value}</button>
           ))}
         </div>
-      </section>
 
-      <label className="ds-loop-note">
-        Note · optional
+        <div className="loop-sl">Note <span className="opt">· optional</span></div>
         <textarea
+          className="loop-note-field"
           value={note}
-          onChange={(event) => { setSaved(false); setNote(event.target.value); }}
+          onChange={(event) => setNote(event.target.value)}
           placeholder="Anything worth remembering?"
-          rows={3}
         />
-      </label>
 
-      <button className="ds-primary-button" onClick={save} disabled={focusItems.length === 0 && progressed.length === 0}>
-        {saved ? "Saved" : "Done"}
-      </button>
+        <button className="loop-cta" onClick={save}>Done</button>
+      </div>
     </div>
   );
 }
