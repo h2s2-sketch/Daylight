@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daylight v0.3 — Final UI Direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* =====================================================================
+   DAYLIGHT v0.3 — FINAL UI DIRECTION
+   Soft Sunrise identity · Calm Focus structure · Journal review ritual
+   ===================================================================== */
+:root{
+  /* ---- ground & ink (Soft Sunrise) ---- */
+  --dawn:#FCE0C9;        /* top sunrise wash */
+  --haze:#FBEEDD;        /* mid warmth */
+  --paper:#FCF7EF;       /* base ground */
+  --surface:#FFFFFF;     /* raised surface */
+  --ink:#33271E;         /* warm near-black */
+  --muted:#8C7B6B;       /* secondary text */
+  --faint:#BCA997;       /* tertiary / labels */
+  --line:rgba(120,90,55,0.13);   /* hairline rule */
+  --line-hi:rgba(120,90,55,0.22);
+
+  /* ---- accent (the sun — action only) ---- */
+  --sun:#E07B43;
+  --gold:#EDAA3F;
+  --sun-ink:#9A4A1E;
+  --sun-soft:rgba(237,166,63,0.14);
+
+  /* ---- review accent (Journal ink) ---- */
+  --ink-blue:#2E4A6B;
+
+  /* ---- category hues (cool, calmer than accent) ---- */
+  --c-eng:#4B5B9E;       /* Engineering Planning */
+  --c-ai:#7E5AAE;        /* AI / Daylight */
+  --c-weng:#3F6FA6;      /* Work English */
+  --c-fit:#C25A6B;       /* Fitness / Energy */
+  --c-kor:#3E8E6E;       /* Korean Learning */
+  --c-fin:#A98A3C;       /* Personal Finance */
+  --c-port:#A65592;      /* Portfolio / Side Income */
+
+  /* ---- state (review look-back) ---- */
+  --done:#3E8E6E; --done-bg:rgba(62,142,110,0.14);
+  --part:#C98A1C; --part-bg:rgba(201,138,28,0.16);
+  --miss:#8C7B6B; --miss-bg:rgba(120,90,55,0.1);
+
+  --serif:'Newsreader',Georgia,serif;
+  --sans:'Public Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --r:16px; --r-sm:10px; --r-pill:999px;
+  --sh:0 1px 2px rgba(60,40,20,0.04), 0 8px 24px -16px rgba(60,40,20,0.18);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 36px 130px;}
+
+/* header */
+.dh{position:sticky;top:0;z-index:40;background:rgba(252,247,239,0.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+.dh-in{max-width:1180px;margin:0 auto;padding:13px 36px;display:flex;align-items:center;gap:16px;}
+.dh-brand{display:flex;align-items:center;gap:10px;}
+.dh-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(145deg,var(--gold),var(--sun));display:grid;place-items:center;color:#fff;box-shadow:0 0 0 4px var(--sun-soft);}
+.dh-name{font-weight:700;font-size:16px;letter-spacing:-0.01em;}
+.dh-ver{font-size:11px;font-weight:600;color:var(--faint);border:1px solid var(--line-hi);border-radius:var(--r-pill);padding:3px 9px;}
+.dh-nav{margin-left:auto;display:none;gap:2px;}
+.dh-link{font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px 11px;border-radius:var(--r-pill);}
+.dh-link:hover{background:rgba(255,255,255,0.6);color:var(--ink);}
+@media(min-width:1000px){.dh-nav{display:flex;}}
+
+/* hero */
+.hero{padding:60px 0 30px;max-width:780px;position:relative;}
+.hero::before{content:'';position:absolute;top:-60px;left:-40px;width:460px;height:300px;background:radial-gradient(circle at 30% 40%,rgba(237,166,63,0.28),rgba(237,166,63,0) 62%);pointer-events:none;z-index:-1;}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--sun-ink);margin-bottom:16px;}
+.hero h1{font-family:var(--serif);font-weight:500;font-size:60px;line-height:0.98;letter-spacing:-0.02em;margin:0 0 20px;}
+.hero p{font-size:17px;line-height:1.6;color:var(--muted);margin:0;}
+.hero p b{color:var(--ink);font-weight:600;}
+.recipe{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;}
+.recipe .r{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;font-size:12.5px;box-shadow:var(--sh);}
+.recipe .r b{font-weight:700;}
+.recipe .r .tag{font-family:var(--mono);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--sun-ink);background:var(--sun-soft);padding:2px 7px;border-radius:5px;}
+
+/* section scaffold */
+.sec{padding:50px 0 8px;border-top:1px solid var(--line);scroll-margin-top:66px;}
+.sec-k{font-family:var(--mono);font-size:12px;color:var(--sun-ink);font-weight:500;letter-spacing:0.04em;}
+.sec h2{font-family:var(--serif);font-weight:500;font-size:36px;letter-spacing:-0.018em;margin:8px 0 8px;}
+.sec .lede{font-size:15.5px;color:var(--muted);max-width:660px;line-height:1.6;margin:0 0 8px;}
+.sec .lede b{color:var(--ink);font-weight:600;}
+
+/* ============ PHONE ============ */
+.screen-row{display:flex;gap:38px;align-items:flex-start;margin-top:28px;flex-wrap:wrap;}
+.phones{display:flex;gap:22px;flex-wrap:wrap;}
+.cap{text-align:center;font-size:12px;color:var(--muted);margin-top:11px;font-weight:600;}
+.cap .m{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);font-weight:400;margin-top:2px;}
+.notes{flex:1;min-width:290px;}
+
+.ph{width:288px;flex:none;border-radius:40px;border:9px solid #241c16;overflow:hidden;display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 64px -28px rgba(90,50,20,0.5), 0 10px 26px -14px rgba(90,50,20,0.25);}
+.sb{height:38px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:12.5px;font-weight:700;color:var(--ink);}
+.sb .r{display:flex;align-items:center;gap:5px;}
+.bars{display:flex;align-items:flex-end;gap:1.5px;height:9px;}
+.bars span{width:2.5px;border-radius:1px;background:var(--ink);}
+.bars span:nth-child(1){height:4px}.bars span:nth-child(2){height:6px}.bars span:nth-child(3){height:8px}.bars span:nth-child(4){height:9px}
+.batt{width:18px;height:9px;border:1.3px solid var(--ink);border-radius:2.5px;position:relative;padding:1px;}
+.batt span{display:block;height:100%;width:72%;background:var(--ink);border-radius:1px;}
+.body{flex:1;padding:8px 18px 14px;overflow:hidden;position:relative;background:linear-gradient(180deg,var(--dawn) 0%,var(--haze) 26%,var(--paper) 58%);}
+.body.eve{background:linear-gradient(180deg,#F7D9C4 0%,#FBEAD8 30%,var(--paper) 62%);}
+.body.flat{background:var(--paper);}
+/* one subtle sun glow, top-center, behind greeting */
+.sun-glow::before{content:'';position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:300px;height:210px;background:radial-gradient(circle at 50% 50%,rgba(237,166,63,0.42),rgba(237,166,63,0) 64%);pointer-events:none;}
+.scrim{position:absolute;inset:0;background:rgba(40,25,12,0.4);z-index:2;}
+.home{height:5px;width:108px;background:#241c16;border-radius:3px;margin:6px auto 8px;opacity:0.85;}
+
+/* top bar — Calm Focus: rule under wordmark */
+.top{display:flex;align-items:center;justify-content:space-between;padding:3px 1px 11px;border-bottom:1.5px solid var(--ink);position:relative;}
+.top .pb{display:flex;align-items:center;gap:8px;}
+.top .pb .m{width:23px;height:23px;border-radius:7px;background:linear-gradient(145deg,var(--gold),var(--sun));color:#fff;display:grid;place-items:center;}
+.top .pb .nm{font-weight:800;font-size:14px;letter-spacing:-0.01em;color:var(--ink);}
+.count{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--muted);letter-spacing:0.02em;}
+
+.meta{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);margin:14px 0 3px;position:relative;}
+.greet{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.02;letter-spacing:-0.02em;margin:0;position:relative;}
+.greet.sm{font-size:25px;}
+
+/* glowing primary CTA — the ONLY glow */
+.cta{width:100%;border:none;border-radius:14px;background:linear-gradient(145deg,var(--gold),var(--sun));color:#fff;font-family:var(--sans);font-weight:700;font-size:15.5px;padding:16px;display:flex;align-items:center;justify-content:center;gap:9px;position:relative;letter-spacing:-0.005em;margin-top:16px;
+  box-shadow:0 0 0 5px var(--sun-soft), 0 14px 30px -10px rgba(224,123,67,0.55);}
+.cta.done{background:var(--surface);color:var(--sun-ink);box-shadow:0 0 0 4px var(--sun-soft);border:1px solid rgba(224,123,67,0.25);font-weight:600;}
+.cta.ghost{background:transparent;border:1.5px solid var(--ink-blue);color:var(--ink-blue);box-shadow:none;}
+.cta.ink{background:var(--ink-blue);box-shadow:0 10px 24px -12px rgba(46,74,107,0.5);}
+
+/* section label — Calm Focus mono */
+.slab{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint);margin:20px 1px 8px;display:flex;justify-content:space-between;align-items:center;}
+.slab a{color:var(--sun-ink);text-decoration:none;}
+
+/* focus rows — Calm Focus: indexed, ruled, scannable */
+.frow{display:flex;align-items:center;gap:11px;padding:11px 1px;border-bottom:1px solid var(--line);}
+.frow:last-child{border-bottom:none;}
+.frow .ix{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--faint);width:14px;flex:none;}
+.frow .bar{width:3px;height:30px;border-radius:2px;flex:none;}
+.frow .t{flex:1;min-width:0;}
+.frow .tt{font-size:14px;font-weight:700;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.frow .ts{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;}
+
+/* goal glance */
+.grow{display:flex;align-items:center;gap:10px;padding:9px 1px;}
+.grow .d{width:8px;height:8px;border-radius:50%;flex:none;}
+.grow .gn{font-size:13.5px;font-weight:600;}
+
+/* weekend review banner */
+.banner{display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line-hi);margin-top:14px;box-shadow:var(--sh);}
+.banner .bi{width:30px;height:30px;border-radius:8px;background:var(--sun-soft);color:var(--sun-ink);display:grid;place-items:center;flex:none;}
+.banner .bt{font-size:13px;font-weight:700;color:var(--ink);}
+.banner .bs{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:1px;}
+.banner .ba{margin-left:auto;color:var(--sun-ink);}
+
+/* tab bar */
+.tabs{display:flex;padding:7px 8px 4px;border-top:1px solid var(--line);background:rgba(252,247,239,0.8);}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:600;color:var(--faint);}
+.tab.on{color:var(--sun-ink);}
+
+/* ---- check-in sheet ---- */
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:3;background:linear-gradient(180deg,#FFFCF7,var(--surface));border-radius:24px 24px 0 0;padding:10px 18px 20px;box-shadow:0 -18px 44px -14px rgba(90,55,20,0.3);}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line-hi);margin:0 auto 14px;}
+.sh{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:-0.01em;}
+.sd{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin:3px 0 14px;}
+.sl{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;}
+.sl .opt{color:var(--faint);text-transform:none;letter-spacing:0;font-family:var(--sans);font-weight:500;font-size:11px;}
+.tog{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--surface);}
+.tog.on{border-color:var(--sun);background:var(--sun-soft);}
+.tog .ck{width:22px;height:22px;border-radius:7px;border:1.8px solid var(--line-hi);flex:none;display:grid;place-items:center;color:#fff;}
+.tog.on .ck{background:var(--sun);border-color:var(--sun);}
+.tog .bar{width:3px;height:20px;border-radius:2px;flex:none;}
+.tog .nm{font-size:13.5px;font-weight:600;flex:1;}
+.energy{display:flex;gap:7px;}
+.energy button{flex:1;height:38px;border-radius:9px;border:1px solid var(--line-hi);background:var(--surface);font-weight:700;color:var(--muted);font-family:var(--mono);font-size:13px;}
+.energy button.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.note{width:100%;border:1px solid var(--line-hi);border-radius:12px;padding:11px 13px;font-size:13px;color:var(--muted);background:var(--paper);min-height:42px;font-family:var(--serif);font-style:italic;}
+
+/* ---- weekly focus slots ---- */
+.slot{display:flex;gap:12px;padding:14px 1px;border-bottom:1px solid var(--line);align-items:flex-start;}
+.slot .ix{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink);width:20px;flex:none;padding-top:1px;}
+.slot .bd{flex:1;min-width:0;}
+.slot .tt{font-size:14.5px;font-weight:700;letter-spacing:-0.01em;}
+.slot .ln{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px;}
+.slot .ln .d{width:7px;height:7px;border-radius:50%;}
+.slot.empty{border-style:dashed;border-color:var(--line-hi);border-width:0;border-top:1px dashed var(--line-hi);color:var(--faint);align-items:center;justify-content:center;font-size:13px;font-weight:600;gap:7px;}
+.cap-line{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--sun-ink);text-align:center;padding:15px 0 4px;border-top:1px solid var(--line);margin-top:4px;display:flex;align-items:center;justify-content:center;gap:7px;}
+
+/* ---- review (Journal ritual) ---- */
+.rstep{display:flex;align-items:center;gap:6px;margin:6px 0 14px;}
+.rstep .d{height:3px;border-radius:2px;background:var(--line-hi);flex:1;}
+.rstep .d.on{background:var(--sun);}
+.rdate{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted);margin-bottom:3px;}
+.rtitle{font-family:var(--serif);font-weight:500;font-size:27px;letter-spacing:-0.018em;margin:0 0 16px;}
+/* look-back item */
+.lb{border-bottom:1px solid var(--line);padding:12px 1px;}
+.lb .tp{display:flex;align-items:center;gap:9px;}
+.lb .bar{width:3px;height:22px;border-radius:2px;flex:none;}
+.lb .nm{font-size:13.5px;font-weight:700;flex:1;letter-spacing:-0.01em;}
+.lb .mv{font-family:var(--mono);font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;}
+.lb .seg{display:flex;gap:6px;margin-top:9px;}
+.lb .seg button{flex:1;padding:7px 0;border-radius:8px;border:1px solid var(--line-hi);background:var(--surface);font-size:11px;font-weight:700;color:var(--muted);}
+.lb .seg button.done{background:var(--done-bg);color:var(--done);border-color:transparent;}
+.lb .seg button.part{background:var(--part-bg);color:var(--part);border-color:transparent;}
+.lb .seg button.miss{background:var(--miss-bg);color:var(--miss);border-color:transparent;}
+/* journal questions */
+.jq{margin-bottom:16px;}
+.jq .ql{font-family:var(--serif);font-size:17px;font-weight:500;margin-bottom:7px;letter-spacing:-0.01em;}
+.jq .lines{background-image:repeating-linear-gradient(var(--paper) 0 26px,var(--line) 26px 27px);min-height:54px;padding-top:2px;}
+.jq .lines .ink-t{font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink);line-height:27px;display:block;}
+.jq .lines .ink-t.mut{color:var(--faint);}
+/* next week carry */
+.carry{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--sun-ink);background:var(--sun-soft);padding:4px 9px;border-radius:var(--r-pill);}
+
+/* ---- goals ---- */
+.ggroup{margin-bottom:15px;}
+.ggh{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.ggh .d{width:8px;height:8px;border-radius:50%;}
+.ggh .gt{font-family:var(--mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);}
+.gcard{border:1px solid var(--line);border-radius:12px;padding:12px 13px;display:flex;align-items:center;gap:10px;background:var(--surface);}
+.gcard .gt2{font-size:13.5px;font-weight:600;flex:1;letter-spacing:-0.005em;}
+.gcard .st{font-family:var(--mono);font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;padding:3px 8px;border-radius:var(--r-pill);}
+.gcard .st.active{background:var(--done-bg);color:var(--done);}
+.gcard .st.paused{background:var(--miss-bg);color:var(--muted);}
+.gcard.empty{border-style:dashed;color:var(--faint);font-size:12.5px;font-weight:600;justify-content:center;background:transparent;}
+
+/* ---- spec blocks ---- */
+.spec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;box-shadow:var(--sh);}
+.spec+.spec{margin-top:14px;}
+.spec .sk{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--sun-ink);display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.spec dl{margin:0;display:grid;grid-template-columns:130px 1fr;gap:9px 16px;}
+.spec dt{font-size:12px;font-weight:700;color:var(--muted);}
+.spec dd{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink);}
+.spec dd b{font-weight:600;}
+.spec dd .mut{color:var(--muted);}
+.fold{display:flex;gap:10px;margin-top:12px;}
+.fold .col{flex:1;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 13px;}
+.fold .col h5{font-family:var(--mono);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;display:flex;align-items:center;gap:6px;}
+.fold .col.in h5{color:var(--done);} .fold .col.out h5{color:var(--miss);}
+.fold .col ul{list-style:none;margin:0;padding:0;}
+.fold .col li{font-size:12.5px;line-height:1.5;color:var(--ink);padding:3px 0 3px 14px;position:relative;}
+.fold .col li::before{content:'';position:absolute;left:0;top:9px;width:4px;height:4px;border-radius:50%;}
+.fold .col.in li::before{background:var(--done);} .fold .col.out li::before{background:var(--miss);}
+.micro{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:12.5px;line-height:1.6;}
+.micro+.micro{margin-top:7px;}
+.micro b{font-weight:600;}
+.micro .q{font-family:var(--serif);font-style:italic;}
+
+/* design system blocks */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:780px){.two{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--sh);}
+.card h3{font-family:var(--serif);font-weight:600;font-size:19px;margin:0 0 14px;letter-spacing:-0.01em;}
+.palette{display:flex;border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+.palette .sw{flex:1;height:84px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px 9px;}
+.palette .sw .n{font-size:9.5px;font-weight:700;}
+.palette .sw .h{font-family:var(--mono);font-size:9px;}
+.catrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+.catrow:last-child{border-bottom:none;}
+.catrow .d{width:14px;height:14px;border-radius:4px;flex:none;}
+.catrow .cn{font-size:13px;font-weight:600;flex:1;}
+.catrow .ch{font-family:var(--mono);font-size:10.5px;color:var(--muted);}
+.typ{padding:12px 0;border-bottom:1px solid var(--line);}
+.typ:last-child{border-bottom:none;}
+.typ .lbl{font-family:var(--mono);font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+.rules{list-style:none;margin:0;padding:0;}
+.rules li{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5;}
+.rules li:last-child{border-bottom:none;}
+.rules .ic{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-top:1px;}
+.rules.do .ic{background:var(--done-bg);color:var(--done);}
+.rules.dont .ic{background:rgba(194,90,107,0.14);color:var(--c-fit);}
+.rules b{font-weight:600;}
+.handoff{list-style:none;margin:0;padding:0;counter-reset:h;}
+.handoff li{position:relative;padding:13px 0 13px 44px;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.55;}
+.handoff li:last-child{border-bottom:none;}
+.handoff li::before{counter-increment:h;content:counter(h);position:absolute;left:0;top:12px;width:28px;height:28px;border-radius:50%;background:var(--sun-soft);color:var(--sun-ink);font-family:var(--mono);font-size:12px;display:grid;place-items:center;}
+.handoff b{font-weight:700;}
+.handoff code{font-family:var(--mono);font-size:12px;background:var(--paper);border:1px solid var(--line);color:var(--ink);padding:1px 6px;border-radius:5px;}
+.glow-demo{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px;}
+.glow-demo .g{padding:13px 22px;border-radius:12px;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(145deg,var(--gold),var(--sun));box-shadow:0 0 0 5px var(--sun-soft),0 14px 30px -10px rgba(224,123,67,0.55);}
+.glow-demo .x{padding:13px 18px;border-radius:12px;font-weight:600;font-size:13px;color:var(--muted);border:1px dashed var(--line-hi);position:relative;}
+.glow-demo .x::after{content:'✕';position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:var(--c-fit);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:11px;}
+
+.footnote{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint);line-height:1.6;}
+.footnote a{color:var(--sun-ink);text-decoration:none;}
+@media print{.dh{position:static;}}
+</style>
+</head>
+<body>
+<div class="dh">
+  <div class="dh-in">
+    <div class="dh-brand">
+      <span class="dh-mark"><i data-ic="sun" data-size="16" data-stroke="2.1"></i></span>
+      <span class="dh-name">Daylight</span>
+      <span class="dh-ver">v0.3 · Final UI Direction</span>
+    </div>
+    <nav class="dh-nav">
+      <a class="dh-link" href="#system">System</a>
+      <a class="dh-link" href="#dashboard">Dashboard</a>
+      <a class="dh-link" href="#checkin">Check-in</a>
+      <a class="dh-link" href="#focus">Focus</a>
+      <a class="dh-link" href="#review">Review</a>
+      <a class="dh-link" href="#goals">Goals</a>
+      <a class="dh-link" href="#handoff">Handoff</a>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Daylight · v0.3 — Final UI Direction</div>
+    <h1>This is what Daylight looks like.</h1>
+    <p>One committed direction, ready for build. <b>Soft Sunrise</b> gives the warmth and the single glowing action; <b>Calm Focus</b> gives the structure — clear hierarchy, scannable lists, real readability; and the <b>Personal Journal</b> lends exactly one thing: a Weekly Review that feels like closing the week, not filling a form. Same five screens, same loop, same four tables. No new features.</p>
+    <div class="recipe">
+      <div class="r"><span class="tag">Identity</span><b>Soft Sunrise</b></div>
+      <div class="r"><span class="tag">Structure</span><b>Calm Focus</b></div>
+      <div class="r"><span class="tag">Review only</span><b>Personal Journal</b></div>
+    </div>
+  </header>
+
+  <!-- ============ DESIGN SYSTEM ============ -->
+  <section class="sec" id="system">
+    <div class="sec-k">00 — The system</div>
+    <h2>Design system</h2>
+    <p class="lede">The shared rules every screen obeys. Warm ground, one accent reserved for action, cool category hues, a confident type hierarchy, and a single permitted glow.</p>
+
+    <div class="two" style="margin-top:24px">
+      <div class="card">
+        <h3>Final color palette</h3>
+        <div class="palette">
+          <div class="sw" style="background:var(--dawn)"><span class="n" style="color:#7a5230">Dawn</span><span class="h" style="color:#9a6a3e">#FCE0C9</span></div>
+          <div class="sw" style="background:var(--paper)"><span class="n" style="color:#9a8055">Paper</span><span class="h" style="color:#b0935f">#FCF7EF</span></div>
+          <div class="sw" style="background:var(--gold)"><span class="n" style="color:#553600">Gold</span><span class="h" style="color:#6e4700">#EDAA3F</span></div>
+          <div class="sw" style="background:var(--sun)"><span class="n" style="color:#fff">Sun</span><span class="h" style="color:#ffe6d4">#E07B43</span></div>
+          <div class="sw" style="background:var(--ink)"><span class="n" style="color:#fff">Ink</span><span class="h" style="color:#c9b8a8">#33271E</span></div>
+        </div>
+        <dl class="spec-dl" style="margin:16px 0 0;display:grid;grid-template-columns:88px 1fr;gap:8px 14px;font-size:12.5px">
+          <dt style="font-weight:700;color:var(--muted)">Ground</dt><dd style="margin:0">Dawn → Paper vertical wash on scrollable screens; flat Paper on focused tasks.</dd>
+          <dt style="font-weight:700;color:var(--muted)">Accent</dt><dd style="margin:0"><b>Gold→Sun gradient is for action only.</b> Never decorative, never on text blocks.</dd>
+          <dt style="font-weight:700;color:var(--muted)">Ink-blue</dt><dd style="margin:0">#2E4A6B — reserved for the Weekly Review ritual.</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h3>Category colors</h3>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 12px">Seven fixed, <b>cool and calm</b> — deliberately quieter than the sun accent so the orange always means "act". Shown as a small dot or a 3px bar, never as a fill.</p>
+        <div class="catrow"><span class="d" style="background:var(--c-eng)"></span><span class="cn">Engineering Planning</span><span class="ch">#4B5B9E</span></div>
+        <div class="catrow"><span class="d" style="background:var(--c-ai)"></span><span class="cn">AI / Daylight</span><span class="ch">#7E5AAE</span></div>
+        <div class="catrow"><span class="d" style="background:var(--c-weng)"></span><span class="cn">Work English</span><span class="ch">#3F6FA6</span></div>
+        <div class="catrow"><span class="d" style="background:var(--c-fit)"></span><span class="cn">Fitness / Energy</span><span class="ch">#C25A6B</span></div>
+        <div class="catrow"><span class="d" style="background:var(--c-kor)"></span><span class="cn">Korean Learning</span><span class="ch">#3E8E6E</span></div>
+        <div class="catrow"><span class="d" style="background:var(--c-fin)"></span><span class="cn">Personal Finance</span><span class="ch">#A98A3C</span></div>
+        <div class="catrow"><span class="d" style="background:var(--c-port)"></span><span class="cn">Portfolio / Side Income</span><span class="ch">#A65592</span></div>
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:16px">
+      <div class="card">
+        <h3>Typography rules</h3>
+        <div class="typ"><div class="lbl">Newsreader · greetings, headlines, review</div><div style="font-family:var(--serif);font-weight:500;font-size:30px;letter-spacing:-0.02em;line-height:1">Good morning</div></div>
+        <div class="typ"><div class="lbl">Public Sans 700/800 · titles, buttons, focus</div><div style="font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:-0.02em">Ship Daylight v0.3</div></div>
+        <div class="typ"><div class="lbl">IBM Plex Mono · meta, dates, counts, labels</div><div style="font-family:var(--mono);font-size:13px;letter-spacing:0.04em;color:var(--muted)">WEEK 25 · 4 / 7 · MOVED 2 DAYS</div></div>
+        <div class="typ" style="border:none;padding-bottom:0"><div class="lbl">Newsreader italic · review prompts only</div><div style="font-family:var(--serif);font-style:italic;font-size:17px">What worked this week?</div></div>
+      </div>
+      <div class="card">
+        <h3>Button &amp; surface style</h3>
+        <dl style="margin:0;display:grid;grid-template-columns:96px 1fr;gap:10px 14px;font-size:13px;line-height:1.5">
+          <dt style="font-weight:700;color:var(--muted)">Primary</dt><dd style="margin:0">Gold→Sun gradient, 14px radius, <b>one soft glow</b> (see below). One per screen.</dd>
+          <dt style="font-weight:700;color:var(--muted)">Done state</dt><dd style="margin:0">White fill, sun-ink text, faint glow ring — calm, not a trophy.</dd>
+          <dt style="font-weight:700;color:var(--muted)">Review</dt><dd style="margin:0">Solid ink-blue ("like a pen"); no glow.</dd>
+          <dt style="font-weight:700;color:var(--muted)">Surfaces</dt><dd style="margin:0"><b>Hairline rules over cards.</b> White only for sheets, goal cards, the review banner. Everything else floats on the warm ground, divided by warm hairlines.</dd>
+          <dt style="font-weight:700;color:var(--muted)">Radius</dt><dd style="margin:0">14–16px on surfaces, 7px on toggles, pill for chips.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:16px">
+      <div class="card">
+        <h3>Rules for using glow</h3>
+        <div class="glow-demo">
+          <span class="g">Check in for today</span>
+          <span class="x">Second glow</span>
+        </div>
+        <ul class="rules do" style="margin-top:14px">
+          <li><span class="ic"><i data-ic="check" data-size="12" data-stroke="2.6"></i></span><div><b>Exactly one glowing element per screen</b> — always the primary action.</div></li>
+          <li><span class="ic"><i data-ic="check" data-size="12" data-stroke="2.6"></i></span><div>Glow = a soft <code style="font-size:11px">box-shadow</code> ring in sun-soft + one drop shadow. <b>Static. Never animated, never pulsing.</b></div></li>
+          <li><span class="ic"><i data-ic="check" data-size="12" data-stroke="2.6"></i></span><div>The dashboard's <b>one</b> sun-glow wash sits behind the greeting only — it is part of the ground, not a second glow.</div></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Rules for avoiding over-design</h3>
+        <ul class="rules dont" style="margin:0">
+          <li><span class="ic"><i data-ic="plus" data-size="11" data-stroke="2.6" style="transform:rotate(45deg)"></i></span><div><b>No drawn suns, rays, or decorative illustration.</b> The warmth comes from colour and light, not graphics.</div></li>
+          <li><span class="ic"><i data-ic="plus" data-size="11" data-stroke="2.6" style="transform:rotate(45deg)"></i></span><div><b>No full-screen gradients beyond the dawn wash.</b> One subtle vertical wash, then flat paper.</div></li>
+          <li><span class="ic"><i data-ic="plus" data-size="11" data-stroke="2.6" style="transform:rotate(45deg)"></i></span><div><b>No motion</b> except the sheet sliding up and a quiet fade. Nothing bounces.</div></li>
+          <li><span class="ic"><i data-ic="plus" data-size="11" data-stroke="2.6" style="transform:rotate(45deg)"></i></span><div><b>No streak, flame, badge, confetti.</b> The quiet mono "4 / 7 this week" is the only metric.</div></li>
+          <li><span class="ic"><i data-ic="plus" data-size="11" data-stroke="2.6" style="transform:rotate(45deg)"></i></span><div>If it doesn't help a tired person act or reflect, <b>it's not on the screen.</b></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 1 · DASHBOARD ============ -->
+  <section class="sec" id="dashboard">
+    <div class="sec-k">01 — Screen</div>
+    <h2>Dashboard</h2>
+    <p class="lede">The warm landing. Answers <b>what am I focused on, did I show up today, how many check-ins this week</b> — then gets out of the way. Two states: fresh morning, and evening after checking in with the weekend review nudge.</p>
+    <div class="screen-row">
+      <div class="phones">
+        <!-- morning -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>7:12</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body sun-glow">
+              <div class="top"><div class="pb"><span class="m"><i data-ic="sun" data-size="13" data-stroke="2.3"></i></span><span class="nm">DAYLIGHT</span></div><span class="count">4 / 7 this week</span></div>
+              <div class="meta">Wednesday · 17 June</div>
+              <div class="greet">Good morning</div>
+              <button class="cta"><i data-ic="check" data-size="18" data-stroke="2.4"></i>Check in for today</button>
+              <div class="slab"><span>Weekly focus</span><span>03</span></div>
+              <div class="frow"><span class="ix">1</span><span class="bar" style="background:var(--c-ai)"></span><div class="t"><div class="tt">Ship Daylight v0.3</div><div class="ts">Moved 2 days</div></div></div>
+              <div class="frow"><span class="ix">2</span><span class="bar" style="background:var(--c-fit)"></span><div class="t"><div class="tt">Fitness 3×</div><div class="ts">Moved 1 day</div></div></div>
+              <div class="frow"><span class="ix">3</span><span class="bar" style="background:var(--c-kor)"></span><div class="t"><div class="tt">Korean 5 sessions</div><div class="ts">Moved 2 days</div></div></div>
+            </div>
+            <div class="tabs"><div class="tab on"><i data-ic="today" data-size="18"></i>Today</div><div class="tab"><i data-ic="target" data-size="18"></i>Focus</div><div class="tab"><i data-ic="flag" data-size="18"></i>Goals</div></div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Morning — not yet checked in<span class="m">glow CTA · sun-wash behind greeting</span></div>
+        </div>
+        <!-- evening -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>20:46</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body eve">
+              <div class="top"><div class="pb"><span class="m"><i data-ic="sun" data-size="13" data-stroke="2.3"></i></span><span class="nm">DAYLIGHT</span></div><span class="count">5 / 7 this week</span></div>
+              <div class="meta">Saturday · 20 June</div>
+              <div class="greet">Good evening</div>
+              <button class="cta done"><i data-ic="check" data-size="17" data-stroke="2.6"></i>Checked in for today</button>
+              <div class="banner"><span class="bi"><i data-ic="layers" data-size="15" data-stroke="2"></i></span><div><div class="bt">Your week's ready to review</div><div class="bs">ABOUT 4 MINUTES</div></div><span class="ba"><i data-ic="arrow" data-size="16" data-stroke="2"></i></span></div>
+              <div class="slab"><span>Weekly focus</span><span>03</span></div>
+              <div class="frow"><span class="ix">1</span><span class="bar" style="background:var(--c-ai)"></span><div class="t"><div class="tt">Ship Daylight v0.3</div><div class="ts">Moved 4 days</div></div></div>
+              <div class="frow"><span class="ix">2</span><span class="bar" style="background:var(--c-fit)"></span><div class="t"><div class="tt">Fitness 3×</div><div class="ts">Moved 2 days</div></div></div>
+            </div>
+            <div class="tabs"><div class="tab on"><i data-ic="today" data-size="18"></i>Today</div><div class="tab"><i data-ic="target" data-size="18"></i>Focus</div><div class="tab"><i data-ic="flag" data-size="18"></i>Goals</div></div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Evening — checked in, weekend review<span class="m">done state calm · banner Fri–Sun only</span></div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="spec">
+          <div class="sk"><i data-ic="target" data-size="13"></i>Dashboard spec</div>
+          <dl>
+            <dt>Layout</dt><dd>Wordmark + mono count, ruled divider, mono date, serif greeting, <b>glowing CTA</b>, then the indexed weekly-focus list. Goals sit further down.</dd>
+            <dt>Visual</dt><dd>Dawn→paper wash; <b>one</b> sun-glow behind the greeting. Calm Focus structure: rule under the wordmark, mono labels, 3px category bars.</dd>
+            <dt>Main action</dt><dd><b>Check in for today</b> — the only glowing element.</dd>
+            <dt>Components</dt><dd class="mut">TopBar · WeeklyCount · PrimaryCTA · FocusRow×3 · ReviewBanner (conditional) · TabBar</dd>
+            <dt>Above fold</dt><dd>Greeting, date, CTA, first 2–3 focus rows.</dd>
+            <dt>Not present</dt><dd class="mut">Streak, charts, stats grid, settings cog, goal essays.</dd>
+          </dl>
+          <div class="fold">
+            <div class="col in"><h5><i data-ic="check" data-size="11"></i>Above the fold</h5><ul><li>Date + greeting</li><li>Check-in CTA</li><li>Focus rows begin</li></ul></div>
+            <div class="col out"><h5>Deferred / hidden</h5><ul><li>Goals glance (scroll)</li><li>Review banner (weekend)</li><li>Everything else</li></ul></div>
+          </div>
+          <div class="micro" style="margin-top:12px"><b>Microcopy</b> · Greeting: <span class="q">Good morning / afternoon / evening</span> · Count: <b>4 / 7 this week</b> · CTA: <b>Check in for today → Checked in for today</b> · Progress: <b>Moved 2 days</b> · Banner: <span class="q">Your week's ready to review</span></div>
+          <div class="micro"><b>Implementation</b> · Greeting keys off local time. Count = <code style="font-family:var(--mono);font-size:11px">count(daily_checkins this week)</code> shown <code style="font-family:var(--mono);font-size:11px">N / 7</code>, mono, no colour. Banner renders only when current week is unreviewed and day ≥ Friday. <b>Never render a denominator on focus progress.</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2 · CHECK-IN ============ -->
+  <section class="sec" id="checkin">
+    <div class="sec-k">02 — Flow</div>
+    <h2>Daily Check-in sheet</h2>
+    <p class="lede">A bottom sheet that rises over the dashboard — never a page. <b>Under 60 seconds:</b> tap the focuses you moved, optionally energy, optionally one line, Done.</p>
+    <div class="screen-row">
+      <div class="phones">
+        <div>
+          <div class="ph">
+            <div class="sb"><span>20:58</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body eve">
+              <div class="top"><div class="pb"><span class="m"><i data-ic="sun" data-size="13" data-stroke="2.3"></i></span><span class="nm">DAYLIGHT</span></div><span class="count">4 / 7 this week</span></div>
+              <div class="meta">Wednesday · 17 June</div>
+              <div class="greet sm">Good evening</div>
+              <div class="scrim"></div>
+              <div class="sheet">
+                <div class="grab"></div>
+                <div class="sh">How did today go?</div>
+                <div class="sd">Wednesday · 17 June</div>
+                <div class="sl">Made progress on</div>
+                <div class="tog on"><span class="ck"><i data-ic="check" data-size="13" data-stroke="2.6"></i></span><span class="bar" style="background:var(--c-ai)"></span><span class="nm">Ship Daylight v0.3</span></div>
+                <div class="tog on"><span class="ck"><i data-ic="check" data-size="13" data-stroke="2.6"></i></span><span class="bar" style="background:var(--c-kor)"></span><span class="nm">Korean 5 sessions</span></div>
+                <div class="tog"><span class="ck"></span><span class="bar" style="background:var(--c-fit)"></span><span class="nm">Fitness 3×</span></div>
+                <div class="sl">Energy <span class="opt">· optional</span></div>
+                <div class="energy"><button>1</button><button>2</button><button class="on">3</button><button>4</button><button>5</button></div>
+                <div class="sl">Note <span class="opt">· optional</span></div>
+                <div class="note">Anything worth remembering?</div>
+                <button class="cta" style="margin-top:14px">Done</button>
+              </div>
+            </div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Mid check-in — 2 of 3 tapped<span class="m">only the toggles are required</span></div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="spec">
+          <div class="sk"><i data-ic="check" data-size="13"></i>Check-in spec</div>
+          <dl>
+            <dt>Layout</dt><dd>Sheet over a dimmed dashboard. Serif title, mono dateline, three toggle rows, optional energy (1–5), optional note, Done.</dd>
+            <dt>Visual</dt><dd>Warm white sheet, sun-soft fill on tapped toggles, ink energy selection, italic-serif note field. The dashboard stays warm behind the scrim.</dd>
+            <dt>Main action</dt><dd><b>Done</b> — the glowing CTA. Dismisses, flips the dashboard button to its calm "Checked in" state.</dd>
+            <dt>Components</dt><dd class="mut">Sheet · ProgressToggle×3 · EnergyScale (opt) · NoteField (opt) · PrimaryCTA</dd>
+            <dt>Above fold</dt><dd>All three toggles + Done; energy/note reachable just below.</dd>
+            <dt>Not present</dt><dd class="mut">Mood, gratitude, sleep, water, habit trackers, multi-question journaling.</dd>
+          </dl>
+          <div class="micro" style="margin-top:12px"><b>Microcopy</b> · Title: <span class="q">How did today go?</span> · Section: <b>Made progress on</b> · Note placeholder: <span class="q">Anything worth remembering?</span></div>
+          <div class="micro"><b>Implementation</b> · Writes one <code style="font-family:var(--mono);font-size:11px">daily_checkins</code> row, with <code style="font-family:var(--mono);font-size:11px">progressed_focus_ids</code> = tapped focus ids. <b>Idempotent per date</b> — reopening edits today's row. Energy &amp; note never block Done.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3 · WEEKLY FOCUS ============ -->
+  <section class="sec" id="focus">
+    <div class="sec-k">03 — Screen</div>
+    <h2>Weekly Focus page</h2>
+    <p class="lede">Where the week is set. <b>Three indexed slots, hard cap.</b> Calm Focus structure makes "three" feel like an ops list, not a limitation.</p>
+    <div class="screen-row">
+      <div class="phones">
+        <!-- full -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>8:02</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body flat">
+              <div class="top"><div class="pb"><span class="m"><i data-ic="sun" data-size="13" data-stroke="2.3"></i></span><span class="nm">DAYLIGHT</span></div></div>
+              <div class="meta">Week 25 · 16–22 June</div>
+              <div class="greet">This week</div>
+              <div class="slot"><span class="ix">01</span><div class="bd"><div class="tt">Ship Daylight v0.3</div><div class="ln"><span class="d" style="background:var(--c-ai)"></span>AI / Daylight</div></div></div>
+              <div class="slot"><span class="ix">02</span><div class="bd"><div class="tt">Fitness 3×</div><div class="ln"><span class="d" style="background:var(--c-fit)"></span>Fitness / Energy</div></div></div>
+              <div class="slot"><span class="ix">03</span><div class="bd"><div class="tt">Korean 5 sessions</div><div class="ln"><span class="d" style="background:var(--c-kor)"></span>Korean Learning</div></div></div>
+              <div class="cap-line"><i data-ic="check" data-size="12" data-stroke="2.4"></i>Three is the cap. That's the point.</div>
+            </div>
+            <div class="tabs"><div class="tab"><i data-ic="today" data-size="18"></i>Today</div><div class="tab on"><i data-ic="target" data-size="18"></i>Focus</div><div class="tab"><i data-ic="flag" data-size="18"></i>Goals</div></div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Planned — 3 of 3<span class="m">no 4th slot offered</span></div>
+        </div>
+        <!-- partial -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>8:02</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body flat">
+              <div class="top"><div class="pb"><span class="m"><i data-ic="sun" data-size="13" data-stroke="2.3"></i></span><span class="nm">DAYLIGHT</span></div></div>
+              <div class="meta">Week 25 · 16–22 June</div>
+              <div class="greet">This week</div>
+              <div class="slot"><span class="ix">01</span><div class="bd"><div class="tt">Ship Daylight v0.3</div><div class="ln"><span class="d" style="background:var(--c-ai)"></span>AI / Daylight</div></div></div>
+              <div class="slot"><span class="ix">02</span><div class="bd"><div class="tt">Fitness 3×</div><div class="ln"><span class="d" style="background:var(--c-fit)"></span>Fitness / Energy</div></div></div>
+              <div class="slot empty"><i data-ic="plus" data-size="15" data-stroke="2.2"></i>Slot 3 — open</div>
+              <button class="cta"><i data-ic="plus" data-size="17" data-stroke="2.2"></i>Add focus</button>
+            </div>
+            <div class="tabs"><div class="tab"><i data-ic="today" data-size="18"></i>Today</div><div class="tab on"><i data-ic="target" data-size="18"></i>Focus</div><div class="tab"><i data-ic="flag" data-size="18"></i>Goals</div></div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Mid-planning — room for one<span class="m">primary = Add focus</span></div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="spec">
+          <div class="sk"><i data-ic="target" data-size="13"></i>Weekly Focus spec</div>
+          <dl>
+            <dt>Layout</dt><dd>Mono week range, serif "This week", three indexed slots (<code style="font-family:var(--mono);font-size:11px">01 02 03</code>) each with title + category line, then the cap line or Add CTA.</dd>
+            <dt>Visual</dt><dd>Flat paper (a planning surface, no wash). Hairline-ruled slots, mono indices and category labels — scannable and practical.</dd>
+            <dt>Main action</dt><dd><b>Add focus</b> while under 3; at 3 the CTA is gone, replaced by the cap line.</dd>
+            <dt>Components</dt><dd class="mut">FocusSlot×3 · AddFocusCTA · CapLine · (goal-link picker in add sheet)</dd>
+            <dt>Above fold</dt><dd>All three slots + cap/add — the whole week fits one screen.</dd>
+            <dt>Not present</dt><dd class="mut">Metric type, target count, progress bars, a 4th slot, sub-tasks.</dd>
+          </dl>
+          <div class="micro" style="margin-top:12px"><b>Microcopy</b> · Title: <b>This week</b> · Empty slot: <span class="q">Slot 3 — open</span> · At cap: <b>Three is the cap. That's the point.</b></div>
+          <div class="micro"><b>Implementation</b> · Cap = 3 enforced UI + API. Each focus optionally links a <code style="font-family:var(--mono);font-size:11px">goal_id</code>; the number lives in the title ("Fitness 3×") — no metric fields. Reorder by drag updates <code style="font-family:var(--mono);font-size:11px">sort_order</code>.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 · WEEKLY REVIEW ============ -->
+  <section class="sec" id="review">
+    <div class="sec-k">04 — Flow · Journal ritual</div>
+    <h2>Weekly Review flow</h2>
+    <p class="lede">The one place the Personal Journal shows through. Three steps, ~4 minutes, ending with next week planned. It should feel like <b>closing the week</b> — serif questions on ruled lines, an evening dateline, ink-blue "Close the week" — not filling a form. DB still stores <code style="font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line);padding:1px 6px;border-radius:5px">wins / slipped / learning</code>.</p>
+    <div class="screen-row">
+      <div class="phones">
+        <!-- step 1 -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>21:30</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body flat">
+              <div class="rstep" style="margin-top:8px"><span class="d on"></span><span class="d"></span><span class="d"></span></div>
+              <div class="rdate">Sunday evening · the week of 16 June</div>
+              <div class="rtitle">Looking back</div>
+              <div class="lb"><div class="tp"><span class="bar" style="background:var(--c-ai)"></span><span class="nm">Ship Daylight v0.3</span><span class="mv">moved 4d</span></div><div class="seg"><button class="done">Done</button><button>Partial</button><button>Missed</button></div></div>
+              <div class="lb"><div class="tp"><span class="bar" style="background:var(--c-fit)"></span><span class="nm">Fitness 3×</span><span class="mv">moved 2d</span></div><div class="seg"><button>Done</button><button class="part">Partial</button><button>Missed</button></div></div>
+              <div class="lb"><div class="tp"><span class="bar" style="background:var(--c-kor)"></span><span class="nm">Korean 5 sessions</span><span class="mv">moved 3d</span></div><div class="seg"><button>Done</button><button class="part">Partial</button><button>Missed</button></div></div>
+              <button class="cta ink" style="margin-top:14px">Continue<i data-ic="arrow" data-size="15" data-stroke="2.2"></i></button>
+            </div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Step 1 — look back<span class="m">moved-days as fact, you score it</span></div>
+        </div>
+        <!-- step 2 journal -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>21:32</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body flat">
+              <div class="rstep" style="margin-top:8px"><span class="d on"></span><span class="d on"></span><span class="d"></span></div>
+              <div class="rdate">A few quiet questions</div>
+              <div class="rtitle">Reflecting</div>
+              <div class="jq"><div class="ql">What worked this week?</div><div class="lines"><span class="ink-t">Shipped the v0.3 cut and kept</span><span class="ink-t">evenings light enough to rest.</span></div></div>
+              <div class="jq"><div class="ql">What slipped?</div><div class="lines"><span class="ink-t">Only ran twice — Thursday got away.</span></div></div>
+              <div class="jq"><div class="ql">What should I change?</div><div class="lines"><span class="ink-t mut">Lock runs to the morning…</span></div></div>
+              <button class="cta ink">Continue<i data-ic="arrow" data-size="15" data-stroke="2.2"></i></button>
+            </div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Step 2 — the journal page<span class="m">serif questions, ruled lines</span></div>
+        </div>
+        <!-- step 3 next week -->
+        <div>
+          <div class="ph">
+            <div class="sb"><span>21:34</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body flat">
+              <div class="rstep" style="margin-top:8px"><span class="d on"></span><span class="d on"></span><span class="d on"></span></div>
+              <div class="rdate">Looking ahead · 23–29 June</div>
+              <div class="rtitle">Next week</div>
+              <div class="slot"><span class="ix">01</span><div class="bd"><div class="tt">Ship Daylight v0.3</div><div class="ln"><span class="carry"><i data-ic="repeat" data-size="10" data-stroke="2"></i>Carried forward</span></div></div></div>
+              <div class="slot"><span class="ix">02</span><div class="bd"><div class="tt">Fitness 3× — mornings</div><div class="ln"><span class="d" style="background:var(--c-fit)"></span>Fitness / Energy</div></div></div>
+              <div class="slot empty"><i data-ic="plus" data-size="15" data-stroke="2.2"></i>Slot 3 — optional</div>
+              <button class="cta ink"><i data-ic="sun" data-size="16" data-stroke="2.2"></i>Close the week</button>
+            </div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Step 3 — plan next week<span class="m">carry forward = 1 tap</span></div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="spec">
+          <div class="sk"><i data-ic="layers" data-size="13"></i>Weekly Review spec</div>
+          <dl>
+            <dt>Layout</dt><dd>Linear 3 steps with a thin progress bar: <b>Looking back</b> (score each focus) → <b>Reflecting</b> (3 written questions) → <b>Next week</b> (pick ≤3, carry forward).</dd>
+            <dt>Visual</dt><dd><b>The Journal detail:</b> serif step titles, an italic evening dateline, and reflection questions over faint <b>ruled writing lines</b>. Ink-blue buttons. Flat paper — a desk to write on.</dd>
+            <dt>Main action</dt><dd>One per step: <b>Continue → Continue → Close the week.</b></dd>
+            <dt>Components</dt><dd class="mut">StepBar · LookBackItem×3 (Done/Partial/Missed) · JournalQuestion×3 · NextWeekSlot · CarryChip</dd>
+            <dt>Above fold</dt><dd>Step title + first items/questions + the step button.</dd>
+            <dt>Not present</dt><dd class="mut">Satisfaction score, ratings, charts, auto-grading, AI summaries.</dd>
+          </dl>
+          <div class="micro" style="margin-top:12px"><b>Questions → fields</b> · <span class="q">What worked this week?</span> → <code style="font-family:var(--mono);font-size:11px">wins</code> · <span class="q">What slipped?</span> → <code style="font-family:var(--mono);font-size:11px">slipped</code> · <span class="q">What should I change?</span> → <code style="font-family:var(--mono);font-size:11px">learning</code></div>
+          <div class="micro"><b>Implementation</b> · Step 1 shows moved-days from check-ins, user picks status. All 3 questions optional; a blank review still counts. "Close the week" writes <code style="font-family:var(--mono);font-size:11px">weekly_reviews</code>, sets focus statuses, creates carried items on next <code style="font-family:var(--mono);font-size:11px">week_start</code>. Ruled lines are decorative CSS, plain textareas underneath.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5 · GOALS ============ -->
+  <section class="sec" id="goals">
+    <div class="sec-k">05 — Screen</div>
+    <h2>Goals page</h2>
+    <p class="lede">A quiet reference, visited rarely. Seven fixed categories, <b>one line each, one active goal per category.</b> It should feel settled — not a planning essay.</p>
+    <div class="screen-row">
+      <div class="phones">
+        <div>
+          <div class="ph">
+            <div class="sb"><span>9:12</span><span class="r"><span class="bars"><span></span><span></span><span></span><span></span></span><span class="batt"><span></span></span></span></div>
+            <div class="body flat" style="overflow:hidden">
+              <div class="top"><div class="pb"><span class="m"><i data-ic="sun" data-size="13" data-stroke="2.3"></i></span><span class="nm">DAYLIGHT</span></div></div>
+              <div class="greet" style="margin:14px 0 16px">Goals</div>
+              <div class="ggroup"><div class="ggh"><span class="d" style="background:var(--c-eng)"></span><span class="gt">Engineering Planning</span></div><div class="gcard"><span class="gt2">Lead the Q3 programme plan</span><span class="st active">Active</span></div></div>
+              <div class="ggroup"><div class="ggh"><span class="d" style="background:var(--c-ai)"></span><span class="gt">AI / Daylight</span></div><div class="gcard"><span class="gt2">Ship Daylight to daily use</span><span class="st active">Active</span></div></div>
+              <div class="ggroup"><div class="ggh"><span class="d" style="background:var(--c-fit)"></span><span class="gt">Fitness / Energy</span></div><div class="gcard"><span class="gt2">Run 3× a week, consistently</span><span class="st active">Active</span></div></div>
+              <div class="ggroup"><div class="ggh"><span class="d" style="background:var(--c-kor)"></span><span class="gt">Korean Learning</span></div><div class="gcard"><span class="gt2">Hold a 5-minute conversation</span><span class="st paused">Paused</span></div></div>
+              <div class="ggroup"><div class="ggh"><span class="d" style="background:var(--c-weng)"></span><span class="gt">Work English</span></div><div class="gcard empty"><i data-ic="plus" data-size="13" data-stroke="2.2" style="margin-right:5px"></i>Set a goal</div></div>
+            </div>
+            <div class="tabs"><div class="tab"><i data-ic="today" data-size="18"></i>Today</div><div class="tab"><i data-ic="target" data-size="18"></i>Focus</div><div class="tab on"><i data-ic="flag" data-size="18"></i>Goals</div></div>
+            <div class="home"></div>
+          </div>
+          <div class="cap">Goals by category — scrolls to 7<span class="m">one line, one active each</span></div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="spec">
+          <div class="sk"><i data-ic="flag" data-size="13"></i>Goals spec</div>
+          <dl>
+            <dt>Layout</dt><dd>Serif "Goals", then seven category groups in fixed order — mono category label + a single one-line goal card with a status chip. Empty categories invite "Set a goal".</dd>
+            <dt>Visual</dt><dd>Flat paper, white goal cards, cool category dots. Calm and library-quiet; nothing competes.</dd>
+            <dt>Main action</dt><dd><b>Set / edit a goal</b> — opens a tiny sheet (title + status), not a detail page.</dd>
+            <dt>Components</dt><dd class="mut">CategoryGroup×7 · GoalCard · StatusChip · EditSheet</dd>
+            <dt>Above fold</dt><dd>First 3–4 categories.</dd>
+            <dt>Not present</dt><dd class="mut">Descriptions, target dates, sub-goals, progress %, notes, history essays.</dd>
+          </dl>
+          <div class="micro" style="margin-top:12px"><b>Microcopy</b> · Title: <b>Goals</b> · Empty category: <span class="q">Set a goal</span> · Edit sheet: <b>Edit goal</b> · Status: <b>Active / Paused / Archived</b></div>
+          <div class="micro"><b>Implementation</b> · Title is the whole goal — <b>no description field</b>. Enforce <b>one active per category</b>. Status is a chip, not a workflow. Categories are the fixed 7-key enum, always same order.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HANDOFF ============ -->
+  <section class="sec" id="handoff">
+    <div class="sec-k">06 — Hand-off</div>
+    <h2>Final handoff notes</h2>
+    <p class="lede">The rules a coding assistant must hold to keep this direction intact. Build the loop thin and warm; resist everything not listed.</p>
+    <div class="card">
+      <ol class="handoff">
+        <li><b>Tokens first.</b> Define the palette, category enum, and type families as CSS variables exactly as in §00. Ground = dawn→paper wash on scroll screens, flat paper on focused tasks (Focus, Review, Goals).</li>
+        <li><b>One glow, one accent.</b> The Gold→Sun gradient + soft glow ring is <code>.cta</code> only — one per screen. Category colours are cool and never use the accent. No second glow anywhere.</li>
+        <li><b>Type hierarchy is the structure.</b> Newsreader (greetings, review), Public Sans 700/800 (titles, buttons, focus), IBM Plex Mono (dates, counts, labels, "moved Nd"). Hairline rules replace cards.</li>
+        <li><b>Weekly count, never streak.</b> <code>count(daily_checkins this week)</code> → "N / 7 this week", mono, muted, top-right. No streak logic, flame, or badge in the codebase.</li>
+        <li><b>Focus progress is words.</b> "Moved N days" = count of this week's check-ins whose <code>progressed_focus_ids</code> includes the focus id. <b>Never render a denominator or "N/?".</b></li>
+        <li><b>Check-in is a sheet,</b> idempotent per <code>date</code>; only the focus toggles are required. Target &lt; 60s. Don't add fields.</li>
+        <li><b>Review is the journal moment.</b> Three steps, ink-blue buttons, serif questions over CSS ruled lines (plain textareas beneath), evening dateline, "Close the week". Map answers to <code>wins / slipped / learning</code>. Target 3–5 min. No satisfaction score.</li>
+        <li><b>Focus cap = 3</b>, enforced UI + API; hide the add affordance at 3 and show the cap line. Carry-forward clones the focus onto the next <code>week_start</code>.</li>
+        <li><b>Goals stay one line.</b> One active per category, fixed 7-key enum, status chip only. No description field, no detail page.</li>
+        <li><b>Hold the "not present" lists.</b> Each screen's spec names what must not appear. When unsure, leave it out — the warmth and calm come from restraint, not addition. Touch targets ≥ 44px.</li>
+      </ol>
+    </div>
+    <div class="micro" style="margin-top:16px;background:var(--sun-soft);border-color:rgba(224,123,67,0.25)">
+      <b>The bar for done:</b> a tired person opens Daylight at 9pm, checks in in under a minute, and on Sunday closes the week in a few minutes feeling it was worth it — for several weeks running. Warm, calm, practical. Not impressive — <b>repeatable</b>.
+    </div>
+  </section>
+
+  <div class="footnote">
+    Daylight · v0.3 Final UI Direction — Soft Sunrise identity · Calm Focus structure · Personal Journal review. Companion to the <a href="Daylight v0.3 — Visual Directions.html">Visual Directions</a>, <a href="Daylight v0.3 — UI-UX Proposal.html">UI/UX Proposal</a>, <a href="Daylight v0.3 — Implementation Cut.html">Implementation Cut</a>, and <a href="Daylight v0.3 — Product Spec.html">Product Spec</a>. Design specification only — no production code, no feature or data-model changes. Five screens, mobile-first, one action each.
+  </div>
+</div>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EDAA3F"/><stop offset="1" stop-color="#E07B43"/></linearGradient></defs>
+  <rect width="240" height="240" rx="32" fill="#FCE0C9"/>
+  <circle cx="120" cy="116" r="40" fill="url(#g)"/>
+  <g stroke="#E07B43" stroke-width="7" stroke-linecap="round" opacity="0.55">
+    <path d="M120 50v18M64 116H46M194 116h-18M80 76L67 63M160 76l13-13"/>
+  </g>
+  <rect x="60" y="180" width="120" height="12" rx="6" fill="#E07B43"/>
+  <rect x="84" y="204" width="72" height="9" rx="4.5" fill="#33271E" opacity="0.3"/>
+</svg>
+</template>
+
+<script src="daylight-icons.js"></script>
+<script>
+  document.querySelectorAll('.dh-nav a, .footnote a, .slab a').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var href=a.getAttribute('href');
+      if(href&&href.charAt(0)==='#'){var t=document.querySelector(href);if(t){e.preventDefault();window.scrollTo({top:t.offsetTop-58,behavior:'smooth'});}}
+    });
+  });
+</script>
+</body>
+</html>
