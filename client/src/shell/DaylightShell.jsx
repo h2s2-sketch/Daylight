@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Flame, Projects, Settings, Tasks, Today } from "../shared/icons.jsx";
+import { BookOpen, Flame, Layers, Projects, Settings, Tasks, Today } from "../shared/icons.jsx";
 import { api } from "../shared/api.js";
 
 const NAV = [
   { id: "today", label: "Today", Icon: Today },
   { id: "tasks", label: "Tasks", Icon: Tasks },
   { id: "projects", label: "Projects", Icon: Projects },
+  { id: "loop", label: "Loop", Icon: Layers },
   { id: "study", label: "Study", Icon: BookOpen },
   { id: "settings", label: "Settings", Icon: Settings },
 ];

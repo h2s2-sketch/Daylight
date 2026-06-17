@@ -38,6 +38,19 @@ async function dataReq(method, path, body) {
   return data;
 }
 
+async function loopReq(method, path, body) {
+  const res = await fetch(`/api/loop${path}`, {
+    method,
+    credentials: "include",
+    headers: body ? { "Content-Type": "application/json" } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 204) return null;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || res.statusText);
+  return data;
+}
+
 export const api = {
   getAuthStatus: () => fetch("/api/auth/status", { credentials: "include" }).then((res) => res.json()),
   login: async (username, password) => {
@@ -104,4 +117,18 @@ export const api = {
     if (!res.ok) throw new Error(data?.error || "Could not restore default image");
     return data;
   }),
+  getLoopDashboard:    ()             => loopReq("GET",    "/dashboard"),
+  getLoopGoals:        (params = {})  => loopReq("GET",    `/goals?${new URLSearchParams(params)}`),
+  createLoopGoal:      (body)         => loopReq("POST",   "/goals", body),
+  updateLoopGoal:      (id, body)     => loopReq("PATCH",  `/goals/${id}`, body),
+  deleteLoopGoal:      (id)           => loopReq("DELETE", `/goals/${id}`),
+  getLoopFocusItems:   (weekStart)    => loopReq("GET",    `/focus-items${weekStart ? `?week_start=${weekStart}` : ""}`),
+  createLoopFocusItem: (body)         => loopReq("POST",   "/focus-items", body),
+  updateLoopFocusItem: (id, body)     => loopReq("PATCH",  `/focus-items/${id}`, body),
+  deleteLoopFocusItem: (id)           => loopReq("DELETE", `/focus-items/${id}`),
+  getLoopCheckin:      (date)         => loopReq("GET",    `/checkins${date ? `?date=${date}` : ""}`),
+  getLoopCheckins:     (since, until) => loopReq("GET",    `/checkins/list?${new URLSearchParams({ since, until })}`),
+  putLoopCheckin:      (body)         => loopReq("PUT",    "/checkins", body),
+  getLoopReview:       (weekStart)    => loopReq("GET",    `/reviews?week_start=${weekStart}`),
+  putLoopReview:       (body)         => loopReq("PUT",    "/reviews", body),
 };

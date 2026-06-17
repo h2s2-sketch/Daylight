@@ -596,3 +596,17 @@ input { font: inherit; }
   .mockup-stage { padding: 24px; }
   .iphone-device { transform: scale(.82); }
 }
+
+/* Daylight v0.3 Execution Loop — functional layout only (Phase 2).
+   Reuses existing tokens; no Soft Sunrise / Journal styling yet. */
+.ds-loop-nav { margin-bottom: 16px; }
+.ds-loop-input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--ds-border); border-radius: var(--r-sm); background: var(--surface); color: var(--text); font-size: 14px; }
+.ds-loop-weeknav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.ds-loop-weeknav strong { color: var(--text); font-size: 14px; }
+.ds-loop-weeknav .ds-text-link { margin-top: 0; }
+.ds-loop-entrypoints { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.ds-loop-energy { display: flex; gap: 8px; }
+.ds-loop-energy button { width: 40px; height: 40px; border: 1px solid var(--ds-border); border-radius: var(--r-sm); background: var(--surface); color: var(--muted); font-size: 14px; font-weight: 600; }
+.ds-loop-energy button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.ds-loop-note { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; color: var(--text); font-size: 13px; font-weight: 600; }
+.ds-loop-note textarea { padding: 9px 11px; border: 1px solid var(--ds-border); border-radius: var(--r-sm); background: var(--surface); color: var(--text); font: inherit; font-weight: 400; resize: vertical; }

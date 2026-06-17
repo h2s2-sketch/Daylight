@@ -3,6 +3,7 @@ import DaylightShell from "./shell/DaylightShell.jsx";
 import TodayPage from "./modules/home/TodayPage.jsx";
 import TasksPage from "./modules/tasks/TasksPage.jsx";
 import ProjectsPage from "./modules/tasks/ProjectsPage.jsx";
+import LoopSection from "./modules/loop/LoopSection.jsx";
 import Dashboard from "./modules/study/Dashboard.jsx";
 import Review from "./modules/study/Review.jsx";
 import Summary from "./modules/study/Summary.jsx";
@@ -105,6 +106,7 @@ export default function App() {
         )}
         {section === "tasks" && <TasksPage />}
         {section === "projects" && <ProjectsPage onOpenTasks={() => navigate("tasks")} />}
+        {section === "loop" && <LoopSection />}
         {section === "study" && (
           <Dashboard
             onStart={startReview}
