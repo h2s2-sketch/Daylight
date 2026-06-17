@@ -31,8 +31,16 @@ Last reviewed: 2026-06-15.
 - Custom desktop sidebar image with browser-side optimization
 - Marketing mockup route for screenshots
 
+## Daylight v0.3 Execution Loop (in progress)
+
+On branch `claude/modest-bardeen-qd4pc0`, added alongside the existing app; Today / Tasks / Projects / Study / Settings are unchanged.
+
+- Phase 1 (backend): new `loop_goals`, `loop_focus_items`, `loop_checkins`, `loop_reviews` tables (additive `CREATE TABLE IF NOT EXISTS` only) and an isolated `/api/loop` router. Committed.
+- Phase 2 (frontend): functional `client/src/modules/loop/` screens (Dashboard, Goals, Weekly Focus, Daily Check-in, Weekly Review) behind one new "Loop" nav entry. Functional only — final visual direction (Soft Sunrise / Calm Focus / Journal) is deferred to Phase 3. Pending acceptance after `npm test --workspace=server` and `npm run build`.
+
 ## Known issues and cautions
 
+- Phase 3 navigation refinement: after adding the "Loop" nav entry (6 items), the mobile / narrow bottom nav wraps to two rows. Not a Phase 2 blocker; refine the bottom-nav layout in Phase 3.
 - Local clones may have stale remote-tracking history. Check GitHub before pushing or restructuring branches.
 - PWA caches can retain old static assets after deployments; use the troubleshooting guide when styles disappear.
 - AI API modes have manual retry but no automatic retry/back-off.
