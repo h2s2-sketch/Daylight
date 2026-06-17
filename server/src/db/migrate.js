@@ -245,4 +245,58 @@ export function runMigrations(db) {
   `);
 
   seedKoreanCourse(db);
+
+  // Daylight v0.3 Execution Loop tables. Additive only; never alters existing tables.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS loop_goals (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      category   TEXT NOT NULL CHECK(category IN
+                   ('eng_planning','ai_daylight','work_english',
+                    'fitness','korean','finance','portfolio')),
+      title      TEXT NOT NULL,
+      status     TEXT NOT NULL DEFAULT 'active'
+                   CHECK(status IN ('active','paused','archived')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS loop_focus_items (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      week_start TEXT NOT NULL,
+      goal_id    INTEGER REFERENCES loop_goals(id) ON DELETE SET NULL,
+      title      TEXT NOT NULL,
+      status     TEXT NOT NULL DEFAULT 'open'
+                   CHECK(status IN ('open','done','partial','missed','carried')),
+      sort_order INTEGER NOT NULL CHECK(sort_order BETWEEN 1 AND 3),
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS loop_checkins (
+      id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+      date                  TEXT NOT NULL UNIQUE,
+      progressed_focus_ids  TEXT NOT NULL DEFAULT '[]',
+      energy                INTEGER CHECK(energy IS NULL OR (energy BETWEEN 1 AND 5)),
+      note                  TEXT,
+      created_at            TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at            TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS loop_reviews (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      week_start TEXT NOT NULL UNIQUE,
+      wins       TEXT,
+      slipped    TEXT,
+      learning   TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_loop_goals_category ON loop_goals(category);
+    CREATE INDEX IF NOT EXISTS idx_loop_goals_status   ON loop_goals(status);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_loop_goals_one_active_per_category
+      ON loop_goals(category) WHERE status = 'active';
+    CREATE INDEX IF NOT EXISTS idx_loop_focus_items_week ON loop_focus_items(week_start);
+    CREATE INDEX IF NOT EXISTS idx_loop_focus_items_goal ON loop_focus_items(goal_id);
+  `);
 }

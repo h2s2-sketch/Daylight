@@ -11,6 +11,7 @@ import { authRouter, requireAuth } from "./services/auth.js";
 import tasksRouter from "./modules/tasks/routes.js";
 import dataRouter from "./modules/data/routes.js";
 import appearanceRouter, { UPLOAD_DIR } from "./modules/appearance/routes.js";
+import loopRouter from "./modules/loop/routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 mkdirSync(path.join(__dirname, "../../data"), { recursive: true });
@@ -28,6 +29,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/study", requireAuth, studyRouter);
 app.use("/api/study/hangul", requireAuth, hangulRouter);
 app.use("/api/tasks", requireAuth, tasksRouter);
+app.use("/api/loop", requireAuth, loopRouter);
 app.use("/api/data", requireAuth, dataRouter);
 app.use("/api/appearance/sidebar-photo", requireAuth, express.raw({ type: ["image/png", "image/jpeg", "image/webp", "application/octet-stream"], limit: "8mb" }));
 app.use("/api/appearance", requireAuth, appearanceRouter);
